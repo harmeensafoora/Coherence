@@ -1,0 +1,118 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coherence — Reasoning System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f0eee6;
+            --panel-bg: #e8e6de;
+            --border-color: #c0beb0;
+            --text-main: #2a2a24;
+            --text-dim: #7a786a;
+            --accent-green: #4ade80;
+            --accent-amber: #fbbf24;
+            --grid-color: rgba(192, 190, 176, 0.15);
+        }
+        body {
+            font-family: 'IBM+Plex+Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            overflow-x: hidden;
+            /* CRT / Terminal Background Effect */
+            background-image: 
+                radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.03) 100%),
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 100% 100%, 30px 30px, 30px 30px;
+            position: relative;
+        }
+
+        /* Scanline Overlay */
+        body::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.05) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.01), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.01));
+            z-index: 1000;
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* Vignette Effect */
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: radial-gradient(circle at center, transparent 60%, rgba(0,0,0,0.05) 100%);
+            z-index: 1001;
+            pointer-events: none;
+        }
+
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Retro UI Elements */
+        .retro-border { border: 1px solid var(--border-color); }
+        .retro-card { 
+            background: rgba(255, 255, 255, 0.85); 
+            backdrop-filter: blur(4px);
+            border: 1px solid var(--border-color);
+            box-shadow: 2px 2px 0px var(--border-color);
+        }
+        .retro-card:hover {
+            box-shadow: 4px 4px 0px var(--border-color);
+            transform: translate(-1px, -1px);
+            background: rgba(255, 255, 255, 1);
+        }
+        .retro-btn {
+            border: 1px solid var(--border-color);
+            background: #fff;
+            box-shadow: 1px 1px 0px var(--border-color);
+        }
+        .retro-btn:active {
+            box-shadow: 0px 0px 0px var(--border-color);
+            transform: translate(1px, 1px);
+        }
+
+        @keyframes phosphor-glow {
+            0% { text-shadow: 0 0 1px rgba(0,0,0,0.1); }
+            50% { text-shadow: 0 0 3px rgba(0,0,0,0.2); }
+            100% { text-shadow: 0 0 1px rgba(0,0,0,0.1); }
+        }
+
+        .glow-text {
+            animation: phosphor-glow 4s infinite ease-in-out;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "@google/genai": "https://esm.sh/@google/genai@^1.39.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/"
+  }
+}
+</script>
+</head>
+<body class="antialiased">
+    <div id="root"></div>
+</body>
+</html>

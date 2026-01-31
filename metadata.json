@@ -1,0 +1,5 @@
+{
+  "name": "Coherence",
+  "description": "A long-running, stateful reasoning system that monitors and preserves the coherence of human thinking over time, detecting drift and forgotten constraints.",
+  "requestFramePermissions": []
+}
