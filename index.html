@@ -9,6 +9,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              mono: ['JetBrains Mono', 'monospace'],
+              sans: ['IBM Plex Sans', 'sans-serif'],
+            },
+          }
+        }
+      }
+    </script>
     <style>
         :root {
             --bg-color: #f0eee6;
@@ -20,22 +33,31 @@
             --accent-amber: #fbbf24;
             --grid-color: rgba(192, 190, 176, 0.15);
         }
+
+        .dark {
+            --bg-color: #121210;
+            --panel-bg: #1a1a16;
+            --border-color: #33322e;
+            --text-main: #d1d1c1;
+            --text-dim: #908e7e;
+            --grid-color: rgba(255, 255, 255, 0.03);
+        }
+
         body {
-            font-family: 'IBM+Plex+Sans', sans-serif;
+            font-family: 'IBM Plex Sans', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
             overflow-x: hidden;
-            /* CRT / Terminal Background Effect */
             background-image: 
                 radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.03) 100%),
                 linear-gradient(var(--grid-color) 1px, transparent 1px),
                 linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
             background-size: 100% 100%, 30px 30px, 30px 30px;
             position: relative;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* Scanline Overlay */
         body::after {
             content: " ";
             display: block;
@@ -50,7 +72,6 @@
             pointer-events: none;
         }
 
-        /* Vignette Effect */
         body::before {
             content: " ";
             display: block;
@@ -68,27 +89,15 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Retro UI Elements */
-        .retro-border { border: 1px solid var(--border-color); }
         .retro-card { 
             background: rgba(255, 255, 255, 0.85); 
             backdrop-filter: blur(4px);
             border: 1px solid var(--border-color);
             box-shadow: 2px 2px 0px var(--border-color);
+            transition: all 0.2s ease;
         }
-        .retro-card:hover {
-            box-shadow: 4px 4px 0px var(--border-color);
-            transform: translate(-1px, -1px);
-            background: rgba(255, 255, 255, 1);
-        }
-        .retro-btn {
-            border: 1px solid var(--border-color);
-            background: #fff;
-            box-shadow: 1px 1px 0px var(--border-color);
-        }
-        .retro-btn:active {
-            box-shadow: 0px 0px 0px var(--border-color);
-            transform: translate(1px, 1px);
+        .dark .retro-card {
+            background: rgba(30, 30, 26, 0.85);
         }
 
         @keyframes phosphor-glow {
@@ -96,9 +105,11 @@
             50% { text-shadow: 0 0 3px rgba(0,0,0,0.2); }
             100% { text-shadow: 0 0 1px rgba(0,0,0,0.1); }
         }
-
         .glow-text {
             animation: phosphor-glow 4s infinite ease-in-out;
+        }
+        .dark .glow-text {
+            text-shadow: 0 0 8px rgba(209, 209, 193, 0.3);
         }
     </style>
 <script type="importmap">

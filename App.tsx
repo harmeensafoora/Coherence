@@ -13,6 +13,11 @@ const INITIAL_STATE: ReasoningState = {
   driftDetected: []
 };
 
+// Define a base date for the demo timeline: Jan 27, 2026
+const BASE_DATE = new Date('2026-01-27T09:00:00').getTime();
+const DAY = 24 * 60 * 60 * 1000;
+const HOUR = 60 * 60 * 1000;
+
 // Common IDs for linking history to files
 const R1_ID = 'r1';
 const R2_ID = 'r2';
@@ -23,35 +28,36 @@ const DEFAULT_FOLDERS: Folder[] = [
   {
     id: 'ai-edu-research',
     name: 'AI in Education: Privacy-First Tutors',
-    lastActive: Date.now(),
+    createdAt: BASE_DATE, // Jan 27, 09:00
+    lastActive: BASE_DATE + (3 * DAY), // Jan 30
     files: [
       { 
         id: R1_ID, 
-        timestamp: Date.now() - 15000000, 
-        filename: 'research-proposal.txt', 
-        content: 'Final year thesis proposal: Investigating the efficacy of offline-first AI tutors in primary education. Core hypothesis: Local inference maintains student privacy while providing 24/7 access without internet dependencies.', 
+        timestamp: BASE_DATE + (2 * HOUR), // Jan 27, 11:00
+        filename: 'vision.txt', 
+        content: 'Vision: Build a privacy-first AI tutor that runs locally in schools. Goal: 100% student data privacy with zero internet reliance.', 
         status: 'coherent' 
       },
       { 
         id: R2_ID, 
-        timestamp: Date.now() - 10000000, 
-        filename: 'tech-stack-definition.log', 
-        content: 'Technical constraints: Using Edge TPUs for local inference. Models must be quantized to 4-bit to fit on consumer hardware available in underfunded schools.', 
+        timestamp: BASE_DATE + DAY + (5 * HOUR), // Jan 28, 14:00
+        filename: 'hardware-lock.log', 
+        content: 'Constraint: Use cheap school hardware. Approach: 4-bit quantization on local Edge TPUs. No cloud processing allowed.', 
         status: 'coherent' 
       },
       { 
         id: R3_ID, 
-        timestamp: Date.now() - 5000000, 
-        filename: 'multimodal-pivot.txt', 
-        content: 'Realized that local 4-bit models struggle with complex pedagogical reasoning. Decided to integrate a high-capacity cloud API for the reasoning engine to improve test scores, even if it requires a persistent internet connection and data offloading.', 
+        timestamp: BASE_DATE + (2 * DAY) + HOUR, // Jan 29, 10:00
+        filename: 'cloud-pivot.txt', 
+        content: 'Problem: Local models are too weak for complex math logic. Pivot: Use Cloud API for the reasoning engine to improve student performance scores.', 
         status: 'contradiction', 
         contradictsWith: 'Violates anchor: Privacy-first local processing.' 
       },
       {
         id: R4_ID,
-        timestamp: Date.now() - 1000000,
-        filename: 'privacy-alignment-resolution.txt',
-        content: 'Correcting course after evaluating the drift. We will not use public cloud APIs. Instead, we are implementing a "Privileged Intranet Node" — a single high-performance server per school that runs a local unquantized model for complex reasoning. This restores our privacy invariant while solving the reasoning bottleneck.',
+        timestamp: BASE_DATE + (3 * DAY) + (7 * HOUR), // Jan 30, 16:00
+        filename: 'resolution.txt',
+        content: 'Resolution: Scrap the cloud pivot. We will install one powerful "Private Node" per school to handle complex logic locally. Privacy invariant restored.',
         status: 'coherent'
       }
     ],
@@ -64,14 +70,14 @@ const DEFAULT_FOLDERS: Folder[] = [
       ],
       intent: ['Develop a privacy-preserving AI tutor using local Intranet nodes for complex reasoning'],
       constraints: ['Must run on low-cost hardware', 'No PII to be transmitted off-device', 'Single server per school requirement'],
-      driftDetected: [] // Drift resolved in the latest state
+      driftDetected: []
     },
     history: [
       {
         id: 's1',
-        timestamp: Date.now() - 15000000,
-        content: 'Final year thesis proposal: Investigating the efficacy of offline-first AI tutors in primary education...',
-        changeSummary: 'Initial research proposal established.',
+        timestamp: BASE_DATE + (2 * HOUR),
+        content: 'Vision: Build a privacy-first AI tutor that runs locally in schools...',
+        changeSummary: 'Initial vision for local, private AI tutors established.',
         state: {
           ...INITIAL_STATE,
           anchors: ['Privacy-first local processing', 'Offline-first accessibility', 'Non-identifiable student data collection'],
@@ -80,9 +86,9 @@ const DEFAULT_FOLDERS: Folder[] = [
       },
       {
         id: 's2',
-        timestamp: Date.now() - 10000000,
-        content: 'Technical constraints: Using Edge TPUs for local inference...',
-        changeSummary: 'Technical hardware constraints defined.',
+        timestamp: BASE_DATE + DAY + (5 * HOUR),
+        content: 'Constraint: Use cheap school hardware. Approach: 4-bit quantization...',
+        changeSummary: 'Defined local hardware constraints and model quantization.',
         state: {
           ...INITIAL_STATE,
           anchors: ['Privacy-first local processing', 'Offline-first accessibility', 'Non-identifiable student data collection'],
@@ -92,22 +98,22 @@ const DEFAULT_FOLDERS: Folder[] = [
       },
       {
         id: 's3',
-        timestamp: Date.now() - 5000000,
-        content: 'Realized that local 4-bit models struggle... integrating cloud API...',
-        changeSummary: 'Drift detected: Cloud API integration pivot.',
+        timestamp: BASE_DATE + (2 * DAY) + HOUR,
+        content: 'Problem: Local models are too weak for complex math logic. Pivot: Use Cloud API...',
+        changeSummary: 'Drift detected: Cloud pivot violates privacy invariant.',
         state: {
           ...INITIAL_STATE,
           anchors: ['Privacy-first local processing', 'Offline-first accessibility', 'Non-identifiable student data collection'],
-          intent: ['Improve test scores via high-capacity models'],
+          intent: ['Improve performance scores via cloud models'],
           constraints: ['Requires persistent internet connection'],
-          driftDetected: [{ type: 'anchor_violation', message: 'Cloud API violates privacy anchor.', context: 'multimodal-pivot.txt', violatedAnchor: 'Privacy-first local processing' }]
+          driftDetected: [{ type: 'anchor_violation', message: 'Cloud API violates privacy anchor.', context: 'cloud-pivot.txt', violatedAnchor: 'Privacy-first local processing' }]
         }
       },
       {
         id: 's4',
-        timestamp: Date.now() - 1000000,
-        content: 'Correcting course... implementing "Privileged Intranet Node"...',
-        changeSummary: 'Coherence restored via private local server strategy.',
+        timestamp: BASE_DATE + (3 * DAY) + (7 * HOUR),
+        content: 'Resolution: Scrap the cloud pivot. We will install one powerful "Private Node"...',
+        changeSummary: 'Coherence restored via local school server strategy.',
         state: {
           ...INITIAL_STATE,
           anchors: ['Privacy-first local processing', 'Offline-first accessibility', 'Non-identifiable student data collection'],
@@ -120,129 +126,97 @@ const DEFAULT_FOLDERS: Folder[] = [
   },
   {
     id: 'grad-school',
-    name: 'Grad School Applications',
-    lastActive: Date.now() - 43200000,
+    name: 'Grad School: Applied AI Scholarships',
+    createdAt: BASE_DATE + DAY, // Jan 28, 09:00
+    lastActive: BASE_DATE + (3 * DAY) + (5 * HOUR), // Jan 30
     files: [
-      { id: 'f1', timestamp: Date.now() - 50000000, filename: 'initial-scope.txt', content: 'Starting the grad school search. Looking at top HCI schools globally.', status: 'coherent' },
-      { id: 'f2', timestamp: Date.now() - 40000000, filename: 'faculty-shortlist.log', content: 'Deep dive into faculty. MIT, CMU, and ETH Zurich seem like perfect matches for interactive hardware research.', status: 'coherent' },
-      { id: 'f3', timestamp: Date.now() - 30000000, filename: 'prestige-pivot.txt', content: 'Considering adding Stanford and Berkeley just for the ranking, even though the specific lab alignment is lower and funding is more competitive.', status: 'contradiction', contradictsWith: 'Violates anchor: Prioritize faculty alignment over rankings.' }
+      { 
+        id: 'f1', 
+        timestamp: BASE_DATE + DAY + (2 * HOUR), // Jan 28, 11:00
+        filename: 'shortlist.txt', 
+        content: 'Shortlisting universities with 100% international scholarships: KAIST (Korea), NUS (Singapore), and TUM (Germany). Labs must focus on Applied AI (Robotics or Medical).', 
+        status: 'coherent' 
+      },
+      { 
+        id: 'f2', 
+        timestamp: BASE_DATE + (2 * DAY) + (3 * HOUR), // Jan 29, 12:00
+        filename: 'funding-check.log', 
+        content: 'Constraint: Funding is binary. If no full tuition + stipend scholarship is available, the application is discarded. Self-funding is not an option.', 
+        status: 'coherent' 
+      },
+      { 
+        id: 'f3', 
+        timestamp: BASE_DATE + (3 * DAY) + (5 * HOUR), // Jan 30, 14:00
+        filename: 'prestige-drift.txt', 
+        content: 'Considering applying to Columbia University for the brand name, even though it costs $60k/year and offers zero international scholarships.', 
+        status: 'contradiction', 
+        contradictsWith: 'Violates anchor: Only apply if full scholarship is guaranteed.' 
+      }
     ],
     state: { 
       ...INITIAL_STATE, 
       anchors: [
-        'Target only research-focused universities',
-        'Avoid programs without funded PhD tracks',
-        'Prioritize faculty alignment over rankings'
+        'Only apply if full scholarship is guaranteed',
+        'Target labs with Applied AI focus (Real-world impact)',
+        'Maintain research alignment over university ranking'
       ],
-      intent: ['Apply to top 5 HCI programs with strong research alignment'],
-      constraints: ['GRE score due by Oct 15', 'Portfolio lock: Dec 1'],
+      intent: ['Secure a fully-funded Masters/PhD in Applied AI at a top global university'],
+      constraints: ['No self-funding allowed', 'Must provide monthly living stipend'],
       driftDetected: [{ 
         type: 'anchor_violation', 
-        message: 'Ranking priority contradicts faculty alignment anchor.', 
-        context: 'prestige-pivot.txt',
-        violatedAnchor: 'Prioritize faculty alignment over rankings'
+        message: 'Self-funded Ivy League interest contradicts scholarship anchor.', 
+        context: 'prestige-drift.txt',
+        violatedAnchor: 'Only apply if full scholarship is guaranteed'
       }]
     },
     history: []
   },
   {
     id: 'career-2026',
-    name: 'Career Direction 2026',
+    name: 'Career Direction: AI Engineer Path',
+    createdAt: BASE_DATE + (2 * DAY), // Jan 29, 09:00
     lastActive: Date.now(),
     files: [
       { 
         id: 'c1', 
-        timestamp: Date.now() - 20000000, 
-        filename: 'vision-statement.txt', 
-        content: 'Long-term goal: Transition from general software engineering to applied AI research. I want to build systems that exhibit high-level reasoning rather than just pattern matching. Autonomy and agency are the key themes.', 
+        timestamp: BASE_DATE + (2 * DAY) + HOUR, // Jan 29, 10:00
+        filename: 'north-star.txt', 
+        content: 'Vision: AI Engineer by 2026. Focus: Moving from "API wrapper" developer to "Systems" engineer. Master inference optimization and custom agent architectures.', 
         status: 'coherent' 
       },
       { 
         id: 'c2', 
-        timestamp: Date.now() - 15000000, 
-        filename: 'skill-gap-audit.log', 
-        content: 'Current skills: TS, React, Node. Gaps: PyTorch, distributed training, agentic frameworks (LangGraph/AutoGPT internals). Need to commit 10 hours/week to deep learning fundamentals.', 
+        timestamp: BASE_DATE + (3 * DAY) + (2 * HOUR), // Jan 30, 11:00
+        filename: 'skills-roadmap.log', 
+        content: 'Milestones: 1. Master PyTorch fundamentals. 2. Understand CUDA kernels. 3. Contribute to open-source inference engines (vLLM or Ollama).', 
         status: 'coherent' 
       },
       { 
         id: 'c3', 
-        timestamp: Date.now() - 10000000, 
-        filename: 'reading-list-q1.txt', 
-        content: 'Core Reading List:\n1. ReAct: Synergizing Reasoning and Acting in Language Models\n2. Toolformer: Language Models Can Teach Themselves to Use Tools\n3. Voyager: An Open-Ended Embodied Layer with Large Language Models.', 
-        status: 'coherent' 
-      },
-      { 
-        id: 'c4', 
-        timestamp: Date.now() - 5000000, 
-        filename: 'lab-outreach-status.md', 
-        content: 'Status of networking: Reached out to two researchers at Stanford Human-AI Interaction lab. One positive response regarding their open-source agent platform. Goal: Contribute a significant PR by end of Q2.', 
-        status: 'coherent' 
+        timestamp: Date.now(), // Today
+        filename: 'curriculum-drift.md', 
+        content: 'Spending next 3 months mastering high-level prompt engineering techniques instead of deep learning math or system internals.', 
+        status: 'contradiction', 
+        contradictsWith: 'Violates anchor: Prioritize system-level engineering over high-level prompting.'
       }
     ],
     state: { 
       ...INITIAL_STATE, 
       anchors: [
-        'Never compromise on creative autonomy',
-        'Favor long-term learning over short-term salary',
-        'Stay close to research and exploration'
+        'Prioritize system-level engineering over high-level prompting',
+        'Contribute to open-source AI infrastructure',
+        'Deep understanding of model inference vs black-box usage'
       ],
-      intent: ['Transition to applied research roles in agentic AI by Q3 2026'],
-      assumptions: ['Remote work remains standard', 'Industry shift towards agentic AI'],
-      constraints: ['10 hours/week study commitment', 'PR contribution to research lab by Q2'],
-      conclusions: ['Focusing on ReAct and Tool-use frameworks as the primary learning pillar.']
+      intent: ['Transition to a core AI Engineering role focused on infrastructure and agents'],
+      constraints: ['10 hours/week dedicated to CUDA/PyTorch study', 'Deploy one open-source contribution by Q3'],
+      driftDetected: [{
+        type: 'anchor_violation',
+        message: 'Prompt engineering pivot deviates from core systems focus.',
+        context: 'curriculum-drift.md',
+        violatedAnchor: 'Prioritize system-level engineering over high-level prompting'
+      }]
     },
-    history: [
-      {
-        id: 'cs1',
-        timestamp: Date.now() - 20000000,
-        content: 'Long-term goal: Transition from general software engineering...',
-        changeSummary: 'Vision for 2026 defined.',
-        state: {
-          ...INITIAL_STATE,
-          anchors: ['Never compromise on creative autonomy', 'Favor long-term learning over salary', 'Stay close to research'],
-          intent: ['Transition to applied AI research'],
-        }
-      },
-      {
-        id: 'cs2',
-        timestamp: Date.now() - 15000000,
-        content: 'Current skills: TS, React, Node. Gaps: PyTorch...',
-        changeSummary: 'Skill gap analysis and study constraints added.',
-        state: {
-          ...INITIAL_STATE,
-          anchors: ['Never compromise on creative autonomy', 'Favor long-term learning over salary', 'Stay close to research'],
-          intent: ['Transition to applied AI research'],
-          constraints: ['10 hours/week study commitment'],
-        }
-      },
-      {
-        id: 'cs3',
-        timestamp: Date.now() - 10000000,
-        content: 'Core Reading List: 1. ReAct, 2. Toolformer...',
-        changeSummary: 'Curriculum established for autonomous agent study.',
-        state: {
-          ...INITIAL_STATE,
-          anchors: ['Never compromise on creative autonomy', 'Favor long-term learning over salary', 'Stay close to research'],
-          intent: ['Transition to applied AI research'],
-          constraints: ['10 hours/week study commitment'],
-          assumptions: ['Industry shift towards agentic AI'],
-        }
-      },
-      {
-        id: 'cs4',
-        timestamp: Date.now() - 5000000,
-        content: 'Status of networking: Reached out to Stanford...',
-        changeSummary: 'Active outreach and contribution goals established.',
-        state: {
-          ...INITIAL_STATE,
-          anchors: ['Never compromise on creative autonomy', 'Favor long-term learning over salary', 'Stay close to research'],
-          intent: ['Transition to applied AI research'],
-          constraints: ['10 hours/week study commitment', 'PR contribution by Q2'],
-          assumptions: ['Industry shift towards agentic AI'],
-          conclusions: ['Focusing on ReAct and Tool-use as primary pillars.']
-        }
-      }
-    ]
+    history: []
   }
 ];
 
@@ -252,10 +226,25 @@ const App: React.FC = () => {
     return saved ? JSON.parse(saved) : DEFAULT_FOLDERS;
   });
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const saved = localStorage.getItem('coherence_theme');
+    return (saved as 'light' | 'dark') || 'light';
+  });
 
   useEffect(() => {
     localStorage.setItem('coherence_v3_folders', JSON.stringify(folders));
   }, [folders]);
+
+  useEffect(() => {
+    localStorage.setItem('coherence_theme', theme);
+    if (theme === 'dark') {
+      document.body.classList.add('dark');
+    } else {
+      document.body.classList.remove('dark');
+    }
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
   const activeFolder = folders.find(f => f.id === activeFolderId);
 
@@ -272,6 +261,7 @@ const App: React.FC = () => {
     const newFolder: Folder = {
       id: crypto.randomUUID(),
       name,
+      createdAt: Date.now(),
       lastActive: Date.now(),
       files: [],
       state: { 
@@ -292,6 +282,8 @@ const App: React.FC = () => {
         onBack={() => setActiveFolderId(null)} 
         onUpdate={(updates) => updateFolder(activeFolder.id, updates)}
         onDeleteFolder={() => deleteFolder(activeFolder.id)}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
     );
   }
@@ -301,6 +293,8 @@ const App: React.FC = () => {
       folders={folders} 
       onSelectFolder={setActiveFolderId} 
       onCreateFolder={createFolder}
+      theme={theme}
+      onToggleTheme={toggleTheme}
     />
   );
 };

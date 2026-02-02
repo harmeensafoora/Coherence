@@ -35,6 +35,7 @@ export interface FileEntry {
 export interface Folder {
   id: string;
   name: string;
+  createdAt: number;
   lastActive: number;
   files: FileEntry[];
   state: ReasoningState;

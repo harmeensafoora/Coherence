@@ -6,9 +6,11 @@ interface HomeProps {
   folders: Folder[];
   onSelectFolder: (id: string) => void;
   onCreateFolder: (name: string, intent: string, anchors: string[]) => void;
+  theme: 'light' | 'dark';
+  onToggleTheme: () => void;
 }
 
-const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder }) => {
+const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, theme, onToggleTheme }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newName, setNewName] = useState('');
   const [newIntent, setNewIntent] = useState('');
@@ -34,25 +36,32 @@ const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder }) 
   const isFormValid = newName.trim().length > 0 && newIntent.trim().length > 0;
 
   return (
-    <div className="min-h-screen px-12 py-20 flex flex-col items-center relative z-10">
+    <div className="min-h-screen px-12 py-20 flex flex-col items-center relative z-10 transition-colors duration-300">
       <div className="w-full max-w-5xl">
-        <header className="mb-24 pb-12 border-b border-[#c0beb0]/30 flex flex-col lg:flex-row items-start lg:items-end justify-between gap-12">
+        <header className="mb-24 pb-12 border-b border-[#c0beb0]/30 dark:border-white/10 flex flex-col lg:flex-row items-start lg:items-end justify-between gap-12">
           <div className="flex flex-col">
-            <h1 className="text-[48px] font-bold tracking-[0.1em] text-[#2a2a24] uppercase leading-none glow-text mono">Coherence</h1>
-            <p className="text-[13px] font-medium tracking-[0.35em] text-[#908e7e] uppercase mono mt-3 border-l-2 border-[#2a2a24]/10 pl-4">
+            <h1 className="text-[48px] font-bold tracking-[0.1em] text-[#2a2a24] dark:text-[#d1d1c1] uppercase leading-none glow-text mono">Coherence</h1>
+            <p className="text-[13px] font-medium tracking-[0.35em] text-[#908e7e] dark:text-[#7a786a] uppercase mono mt-3 border-l-2 border-[#2a2a24]/10 dark:border-white/10 pl-4">
               Version control for your thinking
             </p>
           </div>
 
           <div className="flex flex-col md:flex-row items-stretch gap-3 w-full lg:w-auto">
             <div className="flex gap-3">
-              <div className="flex-1 md:w-28 p-4 bg-white/30 border border-[#c0beb0]/20 flex flex-col justify-between group">
-                <span className="text-[8px] mono uppercase text-[#b0ae9e] tracking-widest font-bold">Threads</span>
-                <span className="text-[18px] mono font-bold text-[#2a2a24]">{folders.length.toString().padStart(2, '0')}</span>
+              <button 
+                onClick={onToggleTheme}
+                className="md:w-28 p-4 bg-white/30 dark:bg-white/5 border border-[#c0beb0]/20 dark:border-white/10 flex flex-col justify-between group hover:border-[#2a2a24] dark:hover:border-[#d1d1c1] transition-all"
+              >
+                <span className="text-[8px] mono uppercase text-[#b0ae9e] dark:text-[#7a786a] tracking-widest font-bold">Theme</span>
+                <span className="text-[11px] mono font-bold text-[#2a2a24] dark:text-[#d1d1c1] uppercase">{theme}</span>
+              </button>
+              <div className="flex-1 md:w-28 p-4 bg-white/30 dark:bg-white/5 border border-[#c0beb0]/20 dark:border-white/10 flex flex-col justify-between group">
+                <span className="text-[8px] mono uppercase text-[#b0ae9e] dark:text-[#7a786a] tracking-widest font-bold">Threads</span>
+                <span className="text-[18px] mono font-bold text-[#2a2a24] dark:text-[#d1d1c1]">{folders.length.toString().padStart(2, '0')}</span>
               </div>
-              <div className={`flex-1 md:w-28 p-4 bg-white/30 border border-[#c0beb0]/20 flex flex-col justify-between group ${driftCount > 0 ? 'bg-amber-50/20' : ''}`}>
-                <span className="text-[8px] mono uppercase text-[#b0ae9e] tracking-widest font-bold">Drifted</span>
-                <span className={`text-[18px] mono font-bold ${driftCount > 0 ? 'text-[#fbbf24]' : 'text-[#b0ae9e]'}`}>
+              <div className={`flex-1 md:w-28 p-4 bg-white/30 dark:bg-white/5 border border-[#c0beb0]/20 dark:border-white/10 flex flex-col justify-between group ${driftCount > 0 ? 'bg-amber-50/20 dark:bg-amber-900/10' : ''}`}>
+                <span className="text-[8px] mono uppercase text-[#b0ae9e] dark:text-[#7a786a] tracking-widest font-bold">Drifted</span>
+                <span className={`text-[18px] mono font-bold ${driftCount > 0 ? 'text-[#fbbf24]' : 'text-[#b0ae9e] dark:text-[#33322e]'}`}>
                   {driftCount.toString().padStart(2, '0')}
                 </span>
               </div>
@@ -61,7 +70,7 @@ const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder }) 
             {!isCreating && (
               <button 
                 onClick={() => setIsCreating(true)}
-                className="px-6 py-4 mono text-[10px] font-bold uppercase tracking-[0.2em] bg-[#2a2a24] text-white hover:bg-black transition-all flex items-center justify-center gap-2"
+                className="px-6 py-4 mono text-[10px] font-bold uppercase tracking-[0.2em] bg-[#2a2a24] dark:bg-[#d1d1c1] text-white dark:text-[#121210] hover:bg-black dark:hover:bg-white transition-all flex items-center justify-center gap-2"
               >
                 <span>+ Create Thread</span>
               </button>
@@ -70,33 +79,33 @@ const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder }) 
         </header>
 
         {isCreating && (
-          <div className="mb-20 p-10 bg-white/40 border border-dashed border-[#c0beb0]/50 animate-in fade-in slide-in-from-top-4 duration-500">
-            <h2 className="text-[10px] font-bold mono uppercase tracking-[0.3em] text-[#908e7e] mb-8">Thread Allocation</h2>
+          <div className="mb-20 p-10 bg-white/40 dark:bg-white/5 border border-dashed border-[#c0beb0]/50 dark:border-white/10 animate-in fade-in slide-in-from-top-4 duration-500">
+            <h2 className="text-[10px] font-bold mono uppercase tracking-[0.3em] text-[#908e7e] dark:text-[#7a786a] mb-8">Thread Allocation</h2>
             <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-6">
                   <div className="space-y-2">
-                    <label className="block text-[9px] mono uppercase font-bold text-[#b0ae9e] tracking-widest">Thread Identifier (Name)</label>
+                    <label className="block text-[9px] mono uppercase font-bold text-[#b0ae9e] dark:text-[#7a786a] tracking-widest">Thread Identifier (Name)</label>
                     <input 
                       autoFocus
                       type="text"
                       value={newName}
                       onChange={(e) => setNewName(e.target.value)}
                       placeholder="e.g. SYSTEMS_REDESIGN_01"
-                      className="w-full bg-white/60 border border-[#c0beb0]/40 p-4 mono text-[13px] outline-none focus:border-[#2a2a24] transition-all"
+                      className="w-full bg-white/60 dark:bg-white/5 border border-[#c0beb0]/40 dark:border-white/10 p-4 mono text-[13px] text-[#2a2a24] dark:text-[#d1d1c1] outline-none focus:border-[#2a2a24] dark:focus:border-[#d1d1c1] transition-all"
                       required
                     />
                   </div>
                   
                   <div className="space-y-2">
-                    <label className="block text-[9px] mono uppercase font-bold text-[#b0ae9e] tracking-widest">
+                    <label className="block text-[9px] mono uppercase font-bold text-[#b0ae9e] dark:text-[#7a786a] tracking-widest">
                       Core Intent <span className="text-red-400 font-bold">*</span>
                     </label>
                     <textarea 
                       value={newIntent}
                       onChange={(e) => setNewIntent(e.target.value)}
                       placeholder="What is the high-level purpose of this thread?"
-                      className="w-full h-32 bg-white/60 border border-[#c0beb0]/40 p-4 mono text-[13px] outline-none focus:border-[#2a2a24] transition-all resize-none"
+                      className="w-full h-32 bg-white/60 dark:bg-white/5 border border-[#c0beb0]/40 dark:border-white/10 p-4 mono text-[13px] text-[#2a2a24] dark:text-[#d1d1c1] outline-none focus:border-[#2a2a24] dark:focus:border-[#d1d1c1] transition-all resize-none"
                       required
                     />
                   </div>
@@ -104,34 +113,34 @@ const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder }) 
 
                 <div className="space-y-6">
                   <div className="space-y-2 h-full flex flex-col">
-                    <label className="block text-[9px] mono uppercase font-bold text-[#b0ae9e] tracking-widest">
+                    <label className="block text-[9px] mono uppercase font-bold text-[#b0ae9e] dark:text-[#7a786a] tracking-widest">
                       Anchors (Optional, one per line)
                     </label>
                     <textarea 
                       value={newAnchors}
                       onChange={(e) => setNewAnchors(e.target.value)}
                       placeholder="Define invariants Coherence must protect..."
-                      className="w-full flex-1 min-h-[14rem] bg-white/60 border border-[#c0beb0]/40 p-4 mono text-[13px] outline-none focus:border-[#2a2a24] transition-all resize-none"
+                      className="w-full flex-1 min-h-[14rem] bg-white/60 dark:bg-white/5 border border-[#c0beb0]/40 dark:border-white/10 p-4 mono text-[13px] text-[#2a2a24] dark:text-[#d1d1c1] outline-none focus:border-[#2a2a24] dark:focus:border-[#d1d1c1] transition-all resize-none"
                     />
-                    <p className="text-[8px] mono text-[#c0beb0] mt-2 italic">
+                    <p className="text-[8px] mono text-[#c0beb0] dark:text-[#7a786a] mt-2 italic">
                       Anchors are permanent invariants that Coherence monitors for violations.
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-6 pt-6 border-t border-[#c0beb0]/20">
+              <div className="flex items-center space-x-6 pt-6 border-t border-[#c0beb0]/20 dark:border-white/10">
                 <button 
                   type="submit" 
                   disabled={!isFormValid}
-                  className="px-10 py-4 mono text-[10px] font-bold uppercase tracking-widest bg-[#2a2a24] text-white hover:bg-black transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+                  className="px-10 py-4 mono text-[10px] font-bold uppercase tracking-widest bg-[#2a2a24] dark:bg-[#d1d1c1] text-white dark:text-[#121210] hover:bg-black dark:hover:bg-white transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
                 >
                   Mount Thread
                 </button>
                 <button 
                   type="button" 
                   onClick={() => setIsCreating(false)}
-                  className="text-[10px] mono text-[#908e7e] hover:text-[#2a2a24] font-bold uppercase tracking-widest transition-colors"
+                  className="text-[10px] mono text-[#908e7e] dark:text-[#7a786a] hover:text-[#2a2a24] dark:hover:text-[#d1d1c1] font-bold uppercase tracking-widest transition-colors"
                 >
                   Discard
                 </button>
@@ -147,45 +156,55 @@ const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder }) 
             const lastActiveDate = new Date(folder.lastActive).toLocaleDateString([], { 
               year: 'numeric', month: '2-digit', day: '2-digit' 
             });
+            const createdAtDate = new Date(folder.createdAt || folder.lastActive).toLocaleDateString([], { 
+              year: 'numeric', month: '2-digit', day: '2-digit' 
+            });
             
             return (
               <button
                 key={folder.id}
                 onClick={() => onSelectFolder(folder.id)}
-                className="p-6 text-left bg-white/50 border border-[#c0beb0]/20 transition-all hover:bg-white hover:border-[#2a2a24]/20 group relative flex flex-col min-h-[11rem]"
+                className="p-6 text-left bg-white/50 dark:bg-white/5 border border-[#c0beb0]/20 dark:border-white/10 transition-all hover:bg-white dark:hover:bg-white/10 hover:border-[#2a2a24]/20 dark:hover:border-white/20 group relative flex flex-col min-h-[11rem]"
               >
                 <div className="flex items-start justify-between mb-6">
                   <div className="flex items-start gap-4">
-                     <span className="text-2xl text-[#b0ae9e] group-hover:text-[#2a2a24] transition-colors mt-0.5">📁</span>
+                     <span className="text-2xl text-[#b0ae9e] dark:text-[#33322e] group-hover:text-[#2a2a24] dark:group-hover:text-[#d1d1c1] transition-colors mt-0.5">📁</span>
                      <div className="flex flex-col">
-                        <span className="text-[8px] mono text-[#c0beb0] font-bold tracking-[0.2em] mb-0.5">LOC: {folder.id.slice(0, 8)}</span>
-                        <h3 className="text-[15px] font-bold text-[#2a2a24] uppercase mono tracking-tight leading-tight group-hover:underline underline-offset-4">
+                        <span className="text-[8px] mono text-[#c0beb0] dark:text-[#7a786a] font-bold tracking-[0.2em] mb-0.5">LOC: {folder.id.slice(0, 8)}</span>
+                        <h3 className="text-[15px] font-bold text-[#2a2a24] dark:text-[#d1d1c1] uppercase mono tracking-tight leading-tight group-hover:underline underline-offset-4">
                           {folder.name}
                         </h3>
                      </div>
                   </div>
-                  <div className={`w-1.5 h-1.5 rounded-full border border-white mt-1.5 ${isUninitialized ? 'bg-slate-200' : hasDrift ? 'bg-[#fbbf24]' : 'bg-[#4ade80]'}`}></div>
+                  <div className={`w-1.5 h-1.5 rounded-full border border-white dark:border-black mt-1.5 ${isUninitialized ? 'bg-slate-200 dark:bg-slate-800' : hasDrift ? 'bg-[#fbbf24]' : 'bg-[#4ade80]'}`}></div>
                 </div>
                 
-                <div className="mt-auto pt-4 border-t border-[#f0eee6] flex items-center justify-between">
-                  <span className="text-[8px] mono text-[#b0ae9e] font-bold uppercase tracking-widest">
-                    Access: {lastActiveDate}
-                  </span>
-                  <span className={`text-[8px] mono font-bold tracking-[0.2em] uppercase px-1.5 py-0.5 rounded-sm ${hasDrift ? 'bg-amber-50 text-amber-600' : 'bg-green-50 text-green-600'}`}>
-                    {isUninitialized ? 'Pending' : hasDrift ? 'Drifted' : 'Stable'}
-                  </span>
+                <div className="mt-auto pt-4 border-t border-[#f0eee6] dark:border-white/10 flex flex-col gap-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[8px] mono text-[#b0ae9e] dark:text-[#7a786a] font-bold uppercase tracking-widest">
+                      Created: {createdAtDate}
+                    </span>
+                    <span className={`text-[8px] mono font-bold tracking-[0.2em] uppercase px-1.5 py-0.5 rounded-sm ${hasDrift ? 'bg-amber-50 dark:bg-amber-900/10 text-amber-600' : 'bg-green-50 dark:bg-green-900/20 text-green-600'}`}>
+                      {isUninitialized ? 'Pending' : hasDrift ? 'Drifted' : 'Stable'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[8px] mono text-[#b0ae9e] dark:text-[#7a786a] font-bold uppercase tracking-widest">
+                      Access: {lastActiveDate}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-40 transition-opacity">
-                   <span className="text-[7px] mono font-bold uppercase tracking-widest text-[#2a2a24]">Mount &rarr;</span>
+                   <span className="text-[7px] mono font-bold uppercase tracking-widest text-[#2a2a24] dark:text-[#d1d1c1]">Mount &rarr;</span>
                 </div>
               </button>
             );
           })}
         </div>
 
-        <footer className="mt-40 text-center pb-12 opacity-20">
-          <p className="text-[9px] mono text-[#b0ae9e] tracking-[0.4em] font-bold uppercase">
+        <footer className="mt-40 text-center pb-12 opacity-20 dark:opacity-40">
+          <p className="text-[9px] mono text-[#b0ae9e] dark:text-[#7a786a] tracking-[0.4em] font-bold uppercase">
             Observer Protocol 3.0 // State Persistent
           </p>
         </footer>
