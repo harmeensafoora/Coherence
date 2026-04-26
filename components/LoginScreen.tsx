@@ -94,61 +94,72 @@ const LoginScreen: React.FC = () => {
           </p>
         </div>
 
-        {/* Stacked file folders */}
-        <div className="relative" style={{ height: `${FEATURES.length * 64 + 160}px` }}>
-          {FEATURES.map((f, i) => (
-            <div
-              key={f.key}
-              className="absolute w-full"
-              style={{ top: `${i * 60}px`, zIndex: i + 1 }}
-            >
-              {/* Folder tab */}
-              <div className="flex items-end gap-0 mb-0">
-                <div
-                  className="px-4 py-1.5 border border-b-0 border-[#c0beb0] dark:border-white/20"
-                  style={{
-                    background: i % 2 === 0 ? '#e8e4d8' : '#ddd8c8',
-                    borderRadius: '4px 4px 0 0',
-                    minWidth: '140px',
-                  }}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-[9px] mono font-bold text-[#908e7e] dark:text-[#7a786a]">{f.num}</span>
-                    <span className="text-[11px] mono font-black uppercase tracking-widest text-[#2a2a24] dark:text-[#2a2a24]">{f.label}</span>
-                    <div className={`w-1.5 h-1.5 rounded-full ml-1 ${f.dot}`} />
+        {/* Stacked manila folders */}
+        <div className="flex flex-col gap-0">
+          {FEATURES.map((f, i) => {
+            const folderColors = [
+              { body: '#f5e9a8', tab: '#e8d46e', border: '#c8a830', shadow: '#b89020', text: '#3a2a0a' },
+              { body: '#f0e090', tab: '#e0cc60', border: '#c0a020', shadow: '#a88010', text: '#3a2a0a' },
+              { body: '#f7edba', tab: '#ecdb7a', border: '#d0b040', shadow: '#c09828', text: '#3a2a0a' },
+              { body: '#ede4a0', tab: '#dfd070', border: '#bca028', shadow: '#a88818', text: '#3a2a0a' },
+            ];
+            const c = folderColors[i];
+            return (
+              <div key={f.key} style={{ marginTop: i === 0 ? 0 : -2, zIndex: i + 1, position: 'relative' }}>
+                {/* Tab row */}
+                <div className="flex items-end">
+                  <div
+                    className="px-4 py-1.5 flex items-center gap-2"
+                    style={{
+                      background: c.tab,
+                      border: `1.5px solid ${c.border}`,
+                      borderBottom: 'none',
+                      borderRadius: '5px 5px 0 0',
+                      minWidth: '160px',
+                      boxShadow: `-1px -1px 0 ${c.shadow}`,
+                    }}
+                  >
+                    <span className="text-[8px] mono font-bold" style={{ color: c.shadow }}>{f.num}</span>
+                    <span className="text-[11px] mono font-black uppercase tracking-widest" style={{ color: c.text }}>{f.label}</span>
+                    <div className={`w-1.5 h-1.5 rounded-full ${f.dot}`} />
+                  </div>
+                  <div style={{ flex: 1, borderBottom: `1.5px solid ${c.border}` }} />
+                  <div
+                    className="px-3 py-1.5"
+                    style={{
+                      background: c.tab,
+                      border: `1.5px solid ${c.border}`,
+                      borderBottom: 'none',
+                      borderRadius: '5px 5px 0 0',
+                    }}
+                  >
+                    <span className={`text-[8px] mono font-bold uppercase tracking-widest ${f.statusColor}`}>{f.status}</span>
                   </div>
                 </div>
-                <div className="flex-1 border-b border-[#c0beb0] dark:border-white/20" />
-                <div className="px-3 py-1.5 border border-b-0 border-[#c0beb0]/60 dark:border-white/10"
-                  style={{
-                    background: i % 2 === 0 ? '#e8e4d8' : '#ddd8c8',
-                    borderRadius: '4px 4px 0 0',
-                  }}
-                >
-                  <span className={`text-[8px] mono font-bold uppercase tracking-widest ${f.statusColor}`}>{f.status}</span>
-                </div>
-              </div>
 
-              {/* Folder body */}
-              <div
-                className="border border-[#c0beb0] dark:border-white/20 px-5 py-4"
-                style={{
-                  background: i % 2 === 0 ? 'rgba(240,238,230,0.97)' : 'rgba(232,228,216,0.97)',
-                  boxShadow: '3px 3px 0 #c0beb0',
-                }}
-              >
-                <p className="text-[9px] mono text-[#908e7e] italic mb-2">— {f.tagline}</p>
-                {f.content.map((line, li) => (
-                  <div key={li} className="flex items-baseline gap-2.5 py-0.5">
-                    <span className="text-[10px] mono text-[#b0ae9e] w-4 shrink-0">{line.icon}</span>
-                    <span className={`text-[11px] mono ${line.color || 'text-[#4a483a]'} ${line.bold ? 'font-bold' : ''}`}>
-                      {line.text}
-                    </span>
-                  </div>
-                ))}
+                {/* Folder body */}
+                <div
+                  className="px-5 py-4"
+                  style={{
+                    background: c.body,
+                    border: `1.5px solid ${c.border}`,
+                    borderTop: 'none',
+                    boxShadow: `3px 3px 0 ${c.shadow}`,
+                  }}
+                >
+                  <p className="text-[9px] mono italic mb-2.5" style={{ color: c.shadow }}>— {f.tagline}</p>
+                  {f.content.map((line, li) => (
+                    <div key={li} className="flex items-baseline gap-2.5 py-0.5">
+                      <span className="text-[10px] mono w-4 shrink-0" style={{ color: c.shadow }}>{line.icon}</span>
+                      <span className={`text-[11px] mono ${line.color || ''}`} style={!line.color ? { color: c.text } : {}} >
+                        {line.bold ? <strong>{line.text}</strong> : line.text}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
