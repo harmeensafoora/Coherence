@@ -27,6 +27,7 @@
             --bg-color: #f0eee6;
             --panel-bg: #e8e6de;
             --border-color: #c0beb0;
+            --border-strong: #2a2a24;
             --text-main: #2a2a24;
             --text-dim: #7a786a;
             --accent-green: #4ade80;
@@ -38,6 +39,7 @@
             --bg-color: #121210;
             --panel-bg: #1a1a16;
             --border-color: #33322e;
+            --border-strong: #d1d1c1;
             --text-main: #d1d1c1;
             --text-dim: #908e7e;
             --grid-color: rgba(255, 255, 255, 0.03);
@@ -49,7 +51,7 @@
             color: var(--text-main);
             margin: 0;
             overflow-x: hidden;
-            background-image: 
+            background-image:
                 radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.03) 100%),
                 linear-gradient(var(--grid-color) 1px, transparent 1px),
                 linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
@@ -89,41 +91,47 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        .retro-card { 
-            background: rgba(255, 255, 255, 0.85); 
-            backdrop-filter: blur(4px);
-            border: 1px solid var(--border-color);
-            box-shadow: 2px 2px 0px var(--border-color);
-            transition: all 0.2s ease;
+        .retro-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1.5px solid var(--border-color);
+            box-shadow: 3px 3px 0px var(--border-color);
+            transition: all 0.15s ease;
+        }
+        .retro-card:hover {
+            box-shadow: 4px 4px 0px var(--border-strong);
+            border-color: var(--border-strong);
         }
         .dark .retro-card {
-            background: rgba(30, 30, 26, 0.85);
+            background: rgba(20, 20, 18, 0.95);
+            box-shadow: 3px 3px 0px var(--border-color);
         }
 
+        /* Bolder scrollbar */
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); }
+
         @keyframes phosphor-glow {
-            0% { text-shadow: 0 0 1px rgba(0,0,0,0.1); }
-            50% { text-shadow: 0 0 3px rgba(0,0,0,0.2); }
-            100% { text-shadow: 0 0 1px rgba(0,0,0,0.1); }
+            0% { text-shadow: 0 0 2px rgba(0,0,0,0.15); }
+            50% { text-shadow: 0 0 6px rgba(0,0,0,0.3); }
+            100% { text-shadow: 0 0 2px rgba(0,0,0,0.15); }
         }
         .glow-text {
             animation: phosphor-glow 4s infinite ease-in-out;
         }
         .dark .glow-text {
-            text-shadow: 0 0 8px rgba(209, 209, 193, 0.3);
+            text-shadow: 0 0 12px rgba(225, 225, 209, 0.4);
+        }
+
+        /* Stronger focus states */
+        input:focus, textarea:focus {
+            outline: 2px solid var(--border-strong) !important;
+            outline-offset: 0px;
         }
     </style>
-<script type="importmap">
-{
-  "imports": {
-    "react/": "https://esm.sh/react@^19.2.4/",
-    "react": "https://esm.sh/react@^19.2.4",
-    "@google/genai": "https://esm.sh/@google/genai@^1.39.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.4/"
-  }
-}
-</script>
 </head>
 <body class="antialiased">
     <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
 </body>
 </html>

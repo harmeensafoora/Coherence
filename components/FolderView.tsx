@@ -17,11 +17,13 @@ const FolderView: React.FC<FolderViewProps> = ({ folder, onBack, onUpdate, onDel
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [newUpdateText, setNewUpdateText] = useState('');
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
+  const [commitError, setCommitError] = useState<string | null>(null);
 
   const handleCommit = async () => {
     if (!newUpdateText.trim()) return;
 
     setIsAnalyzing(true);
+    setCommitError(null);
     try {
       const result = await analyzeThinking(newUpdateText, folder.state);
       const { changeSummary, filename, ...newState } = result;
@@ -29,8 +31,10 @@ const FolderView: React.FC<FolderViewProps> = ({ folder, onBack, onUpdate, onDel
       const hasDrift = newState.driftDetected.length > 0;
       const contradictionMsg = hasDrift ? newState.driftDetected[0].message : undefined;
 
+      const commitId = crypto.randomUUID();
+
       const newFile: FileEntry = {
-        id: crypto.randomUUID(),
+        id: commitId,
         timestamp: Date.now(),
         filename: filename || `commit-${folder.files.length + 1}.log`,
         content: newUpdateText,
@@ -39,7 +43,7 @@ const FolderView: React.FC<FolderViewProps> = ({ folder, onBack, onUpdate, onDel
       };
 
       const newSnapshot: Snapshot = {
-        id: crypto.randomUUID(),
+        id: commitId,
         timestamp: Date.now(),
         content: newUpdateText,
         state: newState,
@@ -54,8 +58,16 @@ const FolderView: React.FC<FolderViewProps> = ({ folder, onBack, onUpdate, onDel
 
       setNewUpdateText('');
       setSelectedFileId(newFile.id);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Commit failed:", err);
+      const msg = err?.message || '';
+      if (msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('quota')) {
+        setCommitError('API quota exceeded. You\'ve hit the Gemini free tier limit. Wait a minute and try again, or check your usage at ai.dev/rate-limit.');
+      } else if (msg.includes('404') || msg.includes('not found')) {
+        setCommitError('Model not available. Check your Gemini API key has access to the configured model.');
+      } else {
+        setCommitError('Commit failed. Check your connection and try again.');
+      }
     } finally {
       setIsAnalyzing(false);
     }
@@ -81,8 +93,10 @@ const FolderView: React.FC<FolderViewProps> = ({ folder, onBack, onUpdate, onDel
   const handleDeleteSnapshot = (snapshotId: string) => {
     if (!window.confirm("Permanently delete this commit and snapshot? This action is irreversible.")) return;
     const newHistory = folder.history.filter(s => s.id !== snapshotId);
+    const newFiles = folder.files.filter(f => f.id !== snapshotId);
     onUpdate({
       history: newHistory,
+      files: newFiles,
     });
   };
 
@@ -194,6 +208,13 @@ const FolderView: React.FC<FolderViewProps> = ({ folder, onBack, onUpdate, onDel
                   onChange={(e) => setNewUpdateText(e.target.value)}
                 />
                 
+                {commitError && (
+                  <div className="flex items-start justify-between gap-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 animate-in fade-in slide-in-from-top-1">
+                    <p className="text-[11px] mono text-red-700 dark:text-red-400 leading-relaxed">{commitError}</p>
+                    <button onClick={() => setCommitError(null)} className="text-[10px] mono text-red-400 hover:text-red-700 dark:hover:text-red-300 font-bold shrink-0">[×]</button>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-end pt-8 border-t border-[#f0eee6] dark:border-white/10">
                   <button
                     disabled={isAnalyzing || !newUpdateText.trim()}

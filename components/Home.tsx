@@ -8,9 +8,11 @@ interface HomeProps {
   onCreateFolder: (name: string, intent: string, anchors: string[]) => void;
   theme: 'light' | 'dark';
   onToggleTheme: () => void;
+  onSignOut: () => void;
+  userEmail?: string;
 }
 
-const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, theme, onToggleTheme }) => {
+const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, theme, onToggleTheme, onSignOut, userEmail }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newName, setNewName] = useState('');
   const [newIntent, setNewIntent] = useState('');
@@ -68,7 +70,7 @@ const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, th
             </div>
 
             {!isCreating && (
-              <button 
+              <button
                 onClick={() => setIsCreating(true)}
                 className="px-6 py-4 mono text-[10px] font-bold uppercase tracking-[0.2em] bg-[#2a2a24] dark:bg-[#d1d1c1] text-white dark:text-[#121210] hover:bg-black dark:hover:bg-white transition-all flex items-center justify-center gap-2"
               >
@@ -77,6 +79,22 @@ const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, th
             )}
           </div>
         </header>
+
+        <div className="flex items-center justify-end mb-8 -mt-16">
+          <div className="flex items-center gap-4">
+            {userEmail && (
+              <span className="text-[9px] mono text-[#c0beb0] dark:text-[#7a786a] tracking-widest truncate max-w-[180px]">
+                {userEmail}
+              </span>
+            )}
+            <button
+              onClick={onSignOut}
+              className="text-[9px] mono font-bold uppercase tracking-widest text-[#908e7e] dark:text-[#7a786a] hover:text-[#2a2a24] dark:hover:text-[#d1d1c1] transition-colors border border-[#c0beb0]/30 dark:border-white/10 px-3 py-1.5"
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
 
         {isCreating && (
           <div className="mb-20 p-10 bg-white/40 dark:bg-white/5 border border-dashed border-[#c0beb0]/50 dark:border-white/10 animate-in fade-in slide-in-from-top-4 duration-500">

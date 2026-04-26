@@ -7,11 +7,6 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 const reasoningSchema = {
   type: Type.OBJECT,
   properties: {
-    assumptions: {
-      type: Type.ARRAY,
-      items: { type: Type.STRING },
-      description: "Concise foundational premises mentioned by the user."
-    },
     intent: {
       type: Type.ARRAY,
       items: { type: Type.STRING },
@@ -26,11 +21,6 @@ const reasoningSchema = {
       type: Type.ARRAY,
       items: { type: Type.STRING },
       description: "User-declared invariants that must not be violated."
-    },
-    conclusions: {
-      type: Type.ARRAY,
-      items: { type: Type.STRING },
-      description: "Decisions reached in the text."
     },
     driftDetected: {
       type: Type.ARRAY,
@@ -54,33 +44,36 @@ const reasoningSchema = {
       description: "A short, descriptive, lowercase filename for this update, e.g., 'onboarding-fix.txt'."
     }
   },
-  required: ['assumptions', 'intent', 'constraints', 'anchors', 'conclusions', 'driftDetected', 'changeSummary', 'filename']
+  required: ['intent', 'constraints', 'anchors', 'driftDetected', 'changeSummary', 'filename']
 };
 
 export const analyzeThinking = async (
   currentContent: string,
   previousState?: ReasoningState
 ): Promise<ReasoningState & { changeSummary: string; filename: string }> => {
-  const model = 'gemini-3-flash-preview';
-  
+  const model = 'gemini-2.0-flash-lite';
+
   const systemInstruction = `
     You are 'Coherence', a stateful reasoning layer.
     Your mission is to track how reasoning evolves across immutable file commits.
-    
+
     STRICT CONSTRAINTS:
     1. DO NOT assume, hallucinate, or proactively suggest intents, assumptions, or constraints.
     2. ONLY extract state elements if the user explicitly mentions them or they are the direct, undeniable subject of the update.
     3. If the user text is vague, do not add new elements to the state.
-    4. Focus on structural coherence and drift detection against PREVIOUS STATE.
-    5. Detect 'Drift' or 'Contradictions' against established Anchors or Assumptions.
-    
+    4. Focus on structural coherence and drift detection against the declared ANCHORS only — not against previous conclusions or specific details from prior commits.
+    5. Drift ONLY occurs when the current text violates a declared Anchor. Do NOT flag drift for changing your mind about specific tactics, companies, or details — those are normal reasoning evolution, not drift.
+
+    RESOLUTION RULE (critical):
+    If the current text explicitly reaffirms anchors, reverses a previous drift, or states a return to the original intent — set driftDetected to an EMPTY ARRAY. A resolution commit must CLEAR drift, not create new drift. Words like "reaffirming", "scratch that", "going back to", "staying on the original path", "all anchors intact" are strong signals of resolution.
+
     If an Anchor is violated, you MUST set the 'violatedAnchor' field to the exact string of the anchor that was contradicted.
     The message for drift should clearly state: "Violates anchor: [Anchor text]".
   `;
 
   const prompt = `
     TEXT: "${currentContent}"
-    PREVIOUS STATE: ${previousState ? JSON.stringify(previousState) : "Initial system state"}
+    ANCHORS TO PROTECT: ${previousState?.anchors?.length ? JSON.stringify(previousState.anchors) : "None declared yet"}
     Analyze the text and return the updated reasoning state based ONLY on the provided text.
   `;
 

@@ -1,10 +1,10 @@
 
 export interface ReasoningState {
-  assumptions: string[];
+  assumptions?: string[];
   intent: string[];
   constraints: string[];
   anchors: string[];
-  conclusions: string[];
+  conclusions?: string[];
   driftDetected: DriftItem[];
 }
 
