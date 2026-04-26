@@ -90,40 +90,58 @@ const LoginScreen: React.FC = () => {
             Coherence
           </h1>
           <p className="text-[18px] text-[#4a483a] dark:text-[#908e7e] mt-3 font-light tracking-wide">
-            Decisions drift. <span className="font-semibold text-[#2a2a24] dark:text-[#d1d1c1]">Anchors don't.</span>
+            Version control for <span className="font-semibold text-[#2a2a24] dark:text-[#d1d1c1]">your thinking.</span>
           </p>
         </div>
 
-        {/* Folder stack — static, visual, retro */}
-        <div className="space-y-0">
+        {/* Stacked file folders */}
+        <div className="relative" style={{ height: `${FEATURES.length * 64 + 160}px` }}>
           {FEATURES.map((f, i) => (
             <div
               key={f.key}
-              className="border border-[#c0beb0] dark:border-white/15 bg-white/80 dark:bg-[#1a1a16]/90"
-              style={{
-                boxShadow: '2px 2px 0 #c0beb0',
-                marginTop: i === 0 ? 0 : -1,
-              }}
+              className="absolute w-full"
+              style={{ top: `${i * 60}px`, zIndex: i + 1 }}
             >
-              {/* Tab bar */}
-              <div className="flex items-center justify-between px-5 py-3 border-b border-[#c0beb0]/30 dark:border-white/10 bg-[#f0eee6]/70 dark:bg-[#111110]/60">
-                <div className="flex items-center gap-3">
-                  <span className="text-[9px] mono font-bold text-[#c0beb0] dark:text-[#5a5a50]">{f.num}</span>
-                  <span className="text-[13px] mono font-black uppercase tracking-widest text-[#2a2a24] dark:text-[#d1d1c1]">{f.label}</span>
-                  <span className="text-[10px] mono text-[#908e7e] dark:text-[#7a786a] italic hidden sm:inline">— {f.tagline}</span>
+              {/* Folder tab */}
+              <div className="flex items-end gap-0 mb-0">
+                <div
+                  className="px-4 py-1.5 border border-b-0 border-[#c0beb0] dark:border-white/20"
+                  style={{
+                    background: i % 2 === 0 ? '#e8e4d8' : '#ddd8c8',
+                    borderRadius: '4px 4px 0 0',
+                    minWidth: '140px',
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-[9px] mono font-bold text-[#908e7e] dark:text-[#7a786a]">{f.num}</span>
+                    <span className="text-[11px] mono font-black uppercase tracking-widest text-[#2a2a24] dark:text-[#2a2a24]">{f.label}</span>
+                    <div className={`w-1.5 h-1.5 rounded-full ml-1 ${f.dot}`} />
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex-1 border-b border-[#c0beb0] dark:border-white/20" />
+                <div className="px-3 py-1.5 border border-b-0 border-[#c0beb0]/60 dark:border-white/10"
+                  style={{
+                    background: i % 2 === 0 ? '#e8e4d8' : '#ddd8c8',
+                    borderRadius: '4px 4px 0 0',
+                  }}
+                >
                   <span className={`text-[8px] mono font-bold uppercase tracking-widest ${f.statusColor}`}>{f.status}</span>
-                  <div className={`w-1.5 h-1.5 rounded-full ${f.dot}`} />
                 </div>
               </div>
 
-              {/* Content */}
-              <div className="px-5 py-3.5">
+              {/* Folder body */}
+              <div
+                className="border border-[#c0beb0] dark:border-white/20 px-5 py-4"
+                style={{
+                  background: i % 2 === 0 ? 'rgba(240,238,230,0.97)' : 'rgba(232,228,216,0.97)',
+                  boxShadow: '3px 3px 0 #c0beb0',
+                }}
+              >
+                <p className="text-[9px] mono text-[#908e7e] italic mb-2">— {f.tagline}</p>
                 {f.content.map((line, li) => (
                   <div key={li} className="flex items-baseline gap-2.5 py-0.5">
-                    <span className="text-[10px] mono text-[#c0beb0] dark:text-[#5a5a50] w-4 shrink-0">{line.icon}</span>
-                    <span className={`text-[11px] mono ${line.color || 'text-[#4a483a] dark:text-[#908e7e]'} ${line.bold ? 'font-bold' : ''}`}>
+                    <span className="text-[10px] mono text-[#b0ae9e] w-4 shrink-0">{line.icon}</span>
+                    <span className={`text-[11px] mono ${line.color || 'text-[#4a483a]'} ${line.bold ? 'font-bold' : ''}`}>
                       {line.text}
                     </span>
                   </div>
