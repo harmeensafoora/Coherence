@@ -38,11 +38,11 @@ const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, th
   const isFormValid = newName.trim().length > 0 && newIntent.trim().length > 0;
 
   return (
-    <div className="min-h-screen px-12 py-20 flex flex-col items-center relative z-10 transition-colors duration-300">
+    <div className="min-h-screen px-4 sm:px-8 md:px-12 py-10 md:py-20 flex flex-col items-center relative z-10 transition-colors duration-300">
       <div className="w-full max-w-5xl">
-        <header className="mb-24 pb-12 border-b border-[#c0beb0]/30 dark:border-white/10 flex flex-col lg:flex-row items-start lg:items-end justify-between gap-12">
+        <header className="mb-12 md:mb-24 pb-8 md:pb-12 border-b border-[#c0beb0]/30 dark:border-white/10 flex flex-col lg:flex-row items-start lg:items-end justify-between gap-8 md:gap-12">
           <div className="flex flex-col">
-            <h1 className="text-[48px] font-bold tracking-[0.1em] text-[#2a2a24] dark:text-[#d1d1c1] uppercase leading-none glow-text mono">Coherence</h1>
+            <h1 className="text-[36px] md:text-[48px] font-bold tracking-[0.1em] text-[#2a2a24] dark:text-[#d1d1c1] uppercase leading-none glow-text mono">Coherence</h1>
             <p className="text-[13px] font-medium tracking-[0.35em] text-[#908e7e] dark:text-[#7a786a] uppercase mono mt-3 border-l-2 border-[#2a2a24]/10 dark:border-white/10 pl-4">
               Version control for your thinking
             </p>
