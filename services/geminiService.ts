@@ -51,7 +51,7 @@ export const analyzeThinking = async (
   currentContent: string,
   previousState?: ReasoningState
 ): Promise<ReasoningState & { changeSummary: string; filename: string }> => {
-  const model = 'gemini-2.0-flash';
+  const model = 'gemini-2.5-flash-lite';
 
   const systemInstruction = `
     You are 'Coherence', a stateful reasoning layer.
