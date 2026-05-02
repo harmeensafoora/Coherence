@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../services/supabaseClient';
 
-/* ─── Paper slip inside each folder ─── */
+/* ─── Paper slip ─── */
 interface PaperProps {
   rotate: number;
   bg?: string;
@@ -13,28 +13,30 @@ const Paper: React.FC<PaperProps> = ({ rotate, bg = '#ffffff', index = 0, childr
   <div
     style={{
       position: 'absolute',
-      top: 2 + index * 6,
-      left: 18 + index * 20,
-      right: 14 - index * 6,
-      height: 90,
+      top: 2 + index * 8,
+      left: 14 + index * 18,
+      right: 10 - index * 6,
+      height: 92,
       background: bg,
       borderRadius: 4,
       padding: '10px 12px',
-      boxShadow: '0 2px 10px rgba(0,0,0,0.07)',
+      boxShadow: '0 3px 12px rgba(0,0,0,0.12)',
       transform: `rotate(${rotate}deg)`,
       transformOrigin: 'bottom center',
       zIndex: 1 + index,
       overflow: 'hidden',
+      border: '0.5px solid rgba(0,0,0,0.06)',
     }}
   >
     {children}
   </div>
 );
 
-/* ─── macOS-style folder card ─── */
+/* ─── Folder card ─── */
 interface FolderCardProps {
   folderColor: string;
   tabColor: string;
+  borderColor: string;
   dotColor: string;
   label: string;
   title: string;
@@ -43,87 +45,59 @@ interface FolderCardProps {
 }
 
 const FolderCard: React.FC<FolderCardProps> = ({
-  folderColor,
-  tabColor,
-  dotColor,
-  label,
-  title,
-  description,
-  children,
+  folderColor, tabColor, borderColor, dotColor, label, title, description, children,
 }) => (
-  <div style={{ position: 'relative', paddingTop: 52 }}>
-    {/* Papers peeking above the folder */}
+  <div style={{ position: 'relative', paddingTop: 54 }}>
     {children}
-
-    {/* Folder shape */}
     <div style={{ position: 'relative', zIndex: 10 }}>
-      {/* Tab */}
-      <div
-        style={{
-          position: 'absolute',
-          top: -20,
-          left: 0,
-          width: 64,
-          height: 22,
-          background: tabColor,
-          borderRadius: '6px 6px 0 0',
-        }}
-      />
-      {/* Body */}
-      <div
-        style={{
-          background: folderColor,
-          borderRadius: '0 10px 10px 10px',
-          padding: '18px 16px 20px',
-        }}
-      >
+      <div style={{
+        position: 'absolute',
+        top: -22,
+        left: 0,
+        width: 68,
+        height: 24,
+        background: tabColor,
+        borderRadius: '6px 6px 0 0',
+        border: `0.5px solid ${borderColor}`,
+        borderBottom: 'none',
+      }} />
+      <div style={{
+        background: folderColor,
+        borderRadius: '0 8px 8px 8px',
+        padding: '16px 16px 18px',
+        border: `0.5px solid ${borderColor}`,
+      }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-          <div
-            style={{
-              width: 5,
-              height: 5,
-              borderRadius: '50%',
-              background: dotColor,
-              flexShrink: 0,
-            }}
-          />
-          <span
-            style={{
-              fontSize: 7,
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              textTransform: 'uppercase' as const,
-              letterSpacing: '0.2em',
-              color: dotColor,
-            }}
-          >
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
+          <span style={{
+            fontSize: 8,
+            fontFamily: 'monospace',
+            fontWeight: 700,
+            textTransform: 'uppercase' as const,
+            letterSpacing: '0.2em',
+            color: dotColor,
+          }}>
             {label}
           </span>
         </div>
-
-        <h3
-          style={{
-            fontSize: 13,
-            fontWeight: 700,
-            fontFamily: 'monospace',
-            textTransform: 'uppercase' as const,
-            letterSpacing: '0.06em',
-            color: '#2a2a24',
-            margin: '0 0 8px',
-          }}
-        >
+        <h3 style={{
+          fontSize: 13,
+          fontWeight: 700,
+          fontFamily: 'monospace',
+          textTransform: 'uppercase' as const,
+          letterSpacing: '0.06em',
+          color: '#1a1a18',
+          margin: '0 0 8px',
+        }}>
           {title}
         </h3>
-
-        <p
-          style={{
-            fontSize: 11,
-            fontFamily: 'monospace',
-            color: '#a09e90',
-            lineHeight: 1.65,
-            margin: 0,
-          }}
-        >
+        <p style={{
+          fontSize: 11,
+          fontFamily: 'monospace',
+          color: '#6a6860',
+          lineHeight: 1.65,
+          margin: 0,
+        }}>
           {description}
         </p>
       </div>
@@ -131,7 +105,7 @@ const FolderCard: React.FC<FolderCardProps> = ({
   </div>
 );
 
-/* ─── Main login screen ─── */
+/* ─── Login screen ─── */
 const LoginScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -152,177 +126,138 @@ const LoginScreen: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
 
-      {/* ── LEFT — feature showcase ── */}
+      {/* LEFT */}
       <div
-        className="flex-1 flex flex-col justify-between p-12 lg:p-16"
+        className="flex-1 flex flex-col justify-between p-10 lg:p-14"
         style={{
           background: '#f0ede8',
           backgroundImage:
             'linear-gradient(rgba(0,0,0,0.03) 1px,transparent 1px),' +
             'linear-gradient(90deg,rgba(0,0,0,0.03) 1px,transparent 1px)',
-          backgroundSize: '36px 36px',
+          backgroundSize: '32px 32px',
         }}
       >
         {/* Brand */}
         <div>
-          <p
-            style={{
-              fontSize: 8,
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.35em',
-              color: '#c0beb0',
-              marginBottom: 20,
-            }}
-          >
+          <p style={{ fontSize: 8, fontFamily: 'monospace', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.35em', color: '#b0ae9e', marginBottom: 16 }}>
             Observer Protocol 3.0
           </p>
-          <h1
-            style={{
-              fontSize: 52,
-              fontWeight: 700,
-              fontFamily: 'monospace',
-              letterSpacing: '0.08em',
-              color: '#2a2a24',
-              textTransform: 'uppercase',
-              lineHeight: 1,
-              margin: 0,
-            }}
-          >
+          <h1 style={{ fontSize: 48, fontWeight: 700, fontFamily: 'monospace', letterSpacing: '0.08em', color: '#1a1a18', textTransform: 'uppercase', lineHeight: 1, margin: 0 }}>
             Coherence
           </h1>
-          <p
-            style={{
-              fontSize: 14,
-              fontFamily: 'monospace',
-              fontWeight: 300,
-              marginTop: 14,
-            }}
-          >
-            <span style={{ color: '#c0beb0' }}>Decisions drift.</span>{' '}
-            <span style={{ fontWeight: 600, color: '#7a786a' }}>Anchors don't.</span>
+          <p style={{ fontSize: 14, fontFamily: 'monospace', fontWeight: 300, marginTop: 12 }}>
+            <span style={{ color: '#b0ae9e' }}>Decisions drift.</span>{' '}
+            <span style={{ fontWeight: 600, color: '#4a4840' }}>Anchors don't.</span>
           </p>
         </div>
 
-        {/* 2×2 folder grid */}
-        <div className="my-12 grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
+        {/* 2×2 grid */}
+        <div className="my-10 grid grid-cols-1 sm:grid-cols-2 gap-7">
 
-          {/* 1 — Commits */}
+          {/* Commits */}
           <FolderCard
-            folderColor="#e8f5e9"
-            tabColor="#c8e6c9"
-            dotColor="#4caf50"
+            folderColor="#cee8d2"
+            tabColor="#96c99e"
+            borderColor="#89ba92"
+            dotColor="#2e7d32"
             label="Thread History"
             title="Commits"
             description="Log every thought. Each commit captures your reasoning at a moment in time."
           >
-            <Paper rotate={-6} bg="#ffffff" index={0}>
-              <p style={{ fontSize: 8, fontFamily: 'monospace', color: '#6a6860', lineHeight: 1.6 }}>
-                "Leaning towards the offer. The culture felt right and I've been stagnant here for two years."
+            <Paper rotate={-5} bg="#ffffff" index={0}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
+                <span style={{ fontSize: 7.5, fontFamily: 'monospace', color: '#b0ae9e' }}>02/05  14:22</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ fontSize: 7, fontFamily: 'monospace', fontWeight: 700, color: '#4caf50' }}>STABLE</span>
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#4caf50' }} />
+                </div>
+              </div>
+              <p style={{ fontSize: 8.5, fontFamily: 'monospace', color: '#3a3a34', lineHeight: 1.6 }}>
+                "Leaning towards the offer. The culture felt right and I've been stagnant here two years."
               </p>
             </Paper>
             <Paper rotate={4} bg="#f9fbe7" index={1}>
-              <p style={{ fontSize: 8, fontFamily: 'monospace', color: '#6a6860', lineHeight: 1.6 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
+                <span style={{ fontSize: 7.5, fontFamily: 'monospace', color: '#b0ae9e' }}>02/05  16:41</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ fontSize: 7, fontFamily: 'monospace', fontWeight: 700, color: '#f59e0b' }}>DRIFTED</span>
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#f59e0b' }} />
+                </div>
+              </div>
+              <p style={{ fontSize: 8.5, fontFamily: 'monospace', color: '#3a3a34', lineHeight: 1.6 }}>
                 "Actually the pay cut is too steep. Can't justify it with rent going up."
               </p>
             </Paper>
           </FolderCard>
 
-          {/* 2 — Anchors */}
+          {/* Anchors */}
           <FolderCard
-            folderColor="#e3f2fd"
-            tabColor="#bbdefb"
-            dotColor="#2196f3"
+            folderColor="#c8dff5"
+            tabColor="#7eb5e8"
+            borderColor="#6aa5dc"
+            dotColor="#1565c0"
             label="Invariants"
             title="Anchors"
             description="Set principles that must never be violated. The Observer monitors every commit against them."
           >
             <Paper rotate={3} bg="#ffffff" index={0}>
-              <p
-                style={{
-                  fontSize: 8,
-                  fontFamily: 'monospace',
-                  color: '#37474f',
-                  lineHeight: 1.9,
-                  whiteSpace: 'pre-line',
-                }}
-              >
-                {'⚓  Never decide out of fear\n⚓  Must not cut take-home pay\n⚓  Role must have a growth path'}
+              <p style={{ fontSize: 8, fontFamily: 'monospace', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#b0ae9e', marginBottom: 8 }}>
+                Anchors
               </p>
+              <div style={{ borderLeft: '2px solid #e0e0e0', paddingLeft: 10, display: 'flex', flexDirection: 'column', gap: 5 }}>
+                {['Never decide out of fear', 'Must not cut take-home pay', 'Role must have growth path'].map((a, i) => (
+                  <p key={i} style={{ fontSize: 8.5, fontFamily: 'monospace', color: '#3a3a34', lineHeight: 1.4, margin: 0 }}>{a}</p>
+                ))}
+              </div>
             </Paper>
           </FolderCard>
 
-          {/* 3 — Drift Detection */}
+          {/* Drift Detection */}
           <FolderCard
-            folderColor="#fff8e1"
-            tabColor="#ffecb3"
-            dotColor="#f59e0b"
+            folderColor="#fde9a2"
+            tabColor="#f5c832"
+            borderColor="#e8b820"
+            dotColor="#b45309"
             label="Observer"
             title="Drift Detection"
             description="The Observer flags when your latest thinking contradicts your own principles."
           >
-            <Paper rotate={-4} bg="#fffde7" index={0}>
-              <p
-                style={{
-                  fontSize: 8,
-                  fontFamily: 'monospace',
-                  color: '#b45309',
-                  lineHeight: 1.6,
-                  whiteSpace: 'pre-line',
-                }}
-              >
-                {'⚠  Drift detected\nReasoning is fear-driven — contradicts anchor: "Never decide out of fear"'}
-              </p>
+            <Paper rotate={-4} bg="#fffef0" index={0}>
+              <div style={{ borderLeft: '2px solid #f59e0b', paddingLeft: 10 }}>
+                <p style={{ fontSize: 7.5, fontFamily: 'monospace', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#b45309', marginBottom: 6 }}>
+                  Observer Note
+                </p>
+                <p style={{ fontSize: 8.5, fontFamily: 'monospace', color: '#92400e', lineHeight: 1.55, fontStyle: 'italic', margin: 0 }}>
+                  "Reasoning is fear-driven — contradicts anchor: Never decide out of fear"
+                </p>
+              </div>
             </Paper>
           </FolderCard>
 
-          {/* 4 — Evolution Map */}
+          {/* Evolution Map */}
           <FolderCard
-            folderColor="#f3e5f5"
-            tabColor="#e1bee7"
-            dotColor="#9c27b0"
+            folderColor="#e2ccf0"
+            tabColor="#b87fd0"
+            borderColor="#a46dc0"
+            dotColor="#6a1b9a"
             label="Thread Timeline"
             title="Evolution Map"
             description="Watch how your position evolves. Trace the exact moment your thinking shifted."
           >
             <Paper rotate={3} bg="#ffffff" index={0}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 9, paddingTop: 6 }}>
+              <p style={{ fontSize: 7.5, fontFamily: 'monospace', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#b0ae9e', marginBottom: 8 }}>
+                Commit Index
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
                 {[
-                  { label: 'Commit #1', note: 'Excited about the move', dot: '#9c27b0' },
-                  { label: 'Commit #2', note: 'Doubts creeping in', dot: '#f59e0b' },
-                  { label: 'Commit #3', note: 'Anchors revisited ↑', dot: '#4caf50' },
+                  { label: 'Excited about the move', dot: '#9c27b0', status: 'STABLE' },
+                  { label: 'Doubts creeping in', dot: '#f59e0b', status: 'DRIFTED' },
+                  { label: 'Anchors revisited', dot: '#4caf50', status: 'STABLE' },
                 ].map((row, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                    <div
-                      style={{
-                        width: 5,
-                        height: 5,
-                        borderRadius: '50%',
-                        background: row.dot,
-                        flexShrink: 0,
-                      }}
-                    />
-                    <span
-                      style={{
-                        fontSize: 7.5,
-                        fontFamily: 'monospace',
-                        fontWeight: 700,
-                        color: '#2a2a24',
-                        textTransform: 'uppercase' as const,
-                        letterSpacing: '0.08em',
-                      }}
-                    >
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7, borderLeft: '2px solid transparent', paddingLeft: 2 }}>
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: row.dot, flexShrink: 0 }} />
+                    <span style={{ fontSize: 8.5, fontFamily: 'monospace', color: '#3a3a34', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {row.label}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: 7.5,
-                        fontFamily: 'monospace',
-                        color: '#a09e90',
-                      }}
-                    >
-                      — {row.note}
                     </span>
                   </div>
                 ))}
@@ -332,82 +267,32 @@ const LoginScreen: React.FC = () => {
 
         </div>
 
-        {/* Footer */}
-        <p
-          style={{
-            fontSize: 8,
-            fontFamily: 'monospace',
-            textTransform: 'uppercase',
-            letterSpacing: '0.3em',
-            color: '#d0cec8',
-          }}
-        >
+        <p style={{ fontSize: 8, fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.3em', color: '#c0beb0' }}>
           Coherence — Reasoning System
         </p>
       </div>
 
-      {/* ── RIGHT — auth panel ── */}
+      {/* RIGHT */}
       <div
-        className="w-full lg:w-[380px] shrink-0 flex flex-col justify-center p-12 lg:p-16"
-        style={{
-          background: '#faf9f6',
-          borderLeft: '1px solid rgba(0,0,0,0.06)',
-        }}
+        className="w-full lg:w-[380px] shrink-0 flex flex-col justify-center p-10 lg:p-14"
+        style={{ background: '#faf9f6', borderLeft: '1px solid rgba(0,0,0,0.06)' }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <p
-              style={{
-                fontSize: 8,
-                fontFamily: 'monospace',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '0.35em',
-                color: '#c0beb0',
-                margin: 0,
-              }}
-            >
+            <p style={{ fontSize: 8, fontFamily: 'monospace', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.35em', color: '#c0beb0', margin: 0 }}>
               Your threads are waiting
             </p>
-            <h2
-              style={{
-                fontSize: 26,
-                fontWeight: 700,
-                fontFamily: 'monospace',
-                textTransform: 'uppercase',
-                letterSpacing: '0.03em',
-                color: '#2a2a24',
-                lineHeight: 1.25,
-                margin: 0,
-              }}
-            >
+            <h2 style={{ fontSize: 26, fontWeight: 700, fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.03em', color: '#1a1a18', lineHeight: 1.25, margin: 0 }}>
               Sign in to access your archive.
             </h2>
-            <p
-              style={{
-                fontSize: 12,
-                fontFamily: 'monospace',
-                color: '#b0ae9e',
-                lineHeight: 1.7,
-                margin: 0,
-              }}
-            >
+            <p style={{ fontSize: 12, fontFamily: 'monospace', color: '#908e7e', lineHeight: 1.7, margin: 0 }}>
               Your reasoning history is private. Only you can read it.
             </p>
           </div>
 
           {error && (
-            <div
-              style={{
-                padding: '12px 14px',
-                border: '1px solid #fca5a5',
-                background: '#fef2f2',
-                fontSize: 11,
-                fontFamily: 'monospace',
-                color: '#dc2626',
-              }}
-            >
+            <div style={{ padding: '12px 14px', border: '1px solid #fca5a5', background: '#fef2f2', fontSize: 11, fontFamily: 'monospace', color: '#dc2626' }}>
               {error}
             </div>
           )}
@@ -422,7 +307,7 @@ const LoginScreen: React.FC = () => {
               alignItems: 'center',
               justifyContent: 'center',
               gap: 12,
-              background: '#2a2a24',
+              background: '#1a1a18',
               color: '#ffffff',
               fontFamily: 'monospace',
               fontSize: 11,
@@ -434,24 +319,12 @@ const LoginScreen: React.FC = () => {
               opacity: loading ? 0.4 : 1,
               transition: 'background 0.15s',
             }}
-            onMouseEnter={(e) => {
-              if (!loading) (e.currentTarget as HTMLButtonElement).style.background = '#000000';
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background = '#2a2a24';
-            }}
+            onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.background = '#000'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#1a1a18'; }}
           >
             {loading ? (
               <>
-                <span
-                  style={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: '50%',
-                    background: '#ffffff',
-                    animation: 'pulse 1.5s infinite',
-                  }}
-                />
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#fff', display: 'inline-block' }} />
                 Redirecting...
               </>
             ) : (
@@ -467,19 +340,9 @@ const LoginScreen: React.FC = () => {
             )}
           </button>
 
-          <p
-            style={{
-              fontSize: 8,
-              fontFamily: 'monospace',
-              textTransform: 'uppercase',
-              letterSpacing: '0.3em',
-              color: '#d0cec8',
-              margin: 0,
-            }}
-          >
+          <p style={{ fontSize: 8, fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.3em', color: '#d0cec8', margin: 0 }}>
             Auth Required // v3.0
           </p>
-
         </div>
       </div>
     </div>
