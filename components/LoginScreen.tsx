@@ -1,66 +1,81 @@
 import React, { useState } from 'react';
 import { supabase } from '../services/supabaseClient';
 
-const FEATURES = [
+const MOCK_THREADS = [
   {
-    key: 'thread',
-    num: '01',
-    label: 'THREADS',
-    tagline: 'One space per decision.',
-    dot: 'bg-[#4ade80]',
-    status: 'STABLE',
-    statusColor: 'text-green-600 dark:text-green-400',
-    content: [
-      { icon: '📁', text: 'CAREER_DIRECTION/', bold: true },
-      { icon: '  ✓', text: 'vision.txt', color: 'text-green-600 dark:text-green-400' },
-      { icon: '  ⚠', text: 'pivot-idea.log', color: 'text-amber-600 dark:text-amber-400' },
-      { icon: '  ✓', text: 'resolution.txt', color: 'text-green-600 dark:text-green-400' },
-    ],
+    id: 'c2f1a849',
+    name: 'DO_I_QUIT_MY_JOB',
+    created: '02/14/2026',
+    accessed: '04/30/2026',
+    status: 'drifted' as const,
   },
   {
-    key: 'commit',
-    num: '02',
-    label: 'COMMITS',
-    tagline: 'Snapshot your thinking.',
-    dot: 'bg-blue-400',
-    status: 'COMMITTED',
-    statusColor: 'text-blue-600 dark:text-blue-400',
-    content: [
-      { icon: '›', text: '09:14  Initial vision set' },
-      { icon: '›', text: '11:32  Constraint added' },
-      { icon: '⚠', text: '14:07  Drift detected', color: 'text-amber-600 dark:text-amber-400' },
-      { icon: '›', text: '16:20  Resolution committed' },
-    ],
+    id: '9e3b17f2',
+    name: 'MOVING_TO_A_NEW_CITY',
+    created: '03/01/2026',
+    accessed: '05/01/2026',
+    status: 'stable' as const,
   },
   {
-    key: 'anchor',
-    num: '03',
-    label: 'ANCHORS',
-    tagline: 'The lines you refuse to cross.',
-    dot: 'bg-purple-400',
-    status: 'PROTECTED',
-    statusColor: 'text-purple-600 dark:text-purple-400',
-    content: [
-      { icon: '🔒', text: 'Masters before full-time roles' },
-      { icon: '🔒', text: 'Only AI product companies' },
-      { icon: '🔒', text: 'Gulf market, not a fallback' },
-    ],
+    id: 'a7d04c31',
+    name: 'THE_RELATIONSHIP',
+    created: '01/09/2026',
+    accessed: '04/28/2026',
+    status: 'drifted' as const,
   },
   {
-    key: 'drift',
-    num: '04',
-    label: 'DRIFT',
-    tagline: 'Know the moment you contradict yourself.',
-    dot: 'bg-amber-400',
-    status: 'DRIFTED ⚠',
-    statusColor: 'text-amber-600 dark:text-amber-400',
-    content: [
-      { icon: '●', text: 'ANCHOR VIOLATED', color: 'text-amber-600 dark:text-amber-400', bold: true },
-      { icon: ' ', text: '"Only AI product companies"' },
-      { icon: '↳', text: 'Bangalore idea contradicts', color: 'text-amber-600 dark:text-amber-400' },
-    ],
+    id: '5b8e2d09',
+    name: 'START_A_BUSINESS',
+    created: '04/22/2026',
+    accessed: '04/22/2026',
+    status: 'pending' as const,
   },
 ];
+
+type ThreadStatus = 'stable' | 'drifted' | 'pending';
+
+const statusConfig: Record<ThreadStatus, { label: string; dot: string; badge: string }> = {
+  stable:  { label: 'Stable',  dot: 'bg-[#4ade80]', badge: 'bg-green-900/20 text-green-400' },
+  drifted: { label: 'Drifted', dot: 'bg-[#fbbf24]', badge: 'bg-amber-900/20 text-amber-400' },
+  pending: { label: 'Pending', dot: 'bg-slate-600',  badge: 'bg-white/5 text-[#7a786a]' },
+};
+
+const MockThreadCard: React.FC<{ id: string; name: string; created: string; accessed: string; status: ThreadStatus }> = ({
+  id, name, created, accessed, status,
+}) => {
+  const s = statusConfig[status];
+  return (
+    <div className="p-5 text-left bg-white/5 border border-white/10 flex flex-col min-h-[9rem] opacity-60 select-none">
+      <div className="flex items-start justify-between mb-5">
+        <div className="flex items-start gap-3">
+          <span className="text-xl text-white/20 mt-0.5">📁</span>
+          <div className="flex flex-col">
+            <span className="text-[8px] mono text-white/20 font-bold tracking-[0.2em] mb-0.5">
+              LOC: {id}
+            </span>
+            <h3 className="text-[13px] font-bold text-[#d1d1c1] uppercase mono tracking-tight leading-tight">
+              {name}
+            </h3>
+          </div>
+        </div>
+        <div className={`w-1.5 h-1.5 rounded-full mt-1 ${s.dot}`} />
+      </div>
+      <div className="mt-auto pt-3 border-t border-white/5 flex flex-col gap-1">
+        <div className="flex items-center justify-between">
+          <span className="text-[8px] mono text-white/20 font-bold uppercase tracking-widest">
+            Created: {created}
+          </span>
+          <span className={`text-[8px] mono font-bold uppercase tracking-[0.15em] px-1.5 py-0.5 ${s.badge}`}>
+            {s.label}
+          </span>
+        </div>
+        <span className="text-[8px] mono text-white/20 font-bold uppercase tracking-widest">
+          Access: {accessed}
+        </span>
+      </div>
+    </div>
+  );
+};
 
 const LoginScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -80,107 +95,80 @@ const LoginScreen: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row relative z-10">
+    <div className="min-h-screen flex flex-col lg:flex-row">
 
-      {/* LEFT */}
-      <div className="flex-1 flex flex-col justify-center p-10 lg:p-16 gap-10">
-
+      {/* LEFT — dark panel with mock thread grid */}
+      <div
+        className="flex-1 flex flex-col justify-between p-10 lg:p-14"
+        style={{
+          background: '#121210',
+          backgroundImage:
+            'linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px)',
+          backgroundSize: '30px 30px',
+        }}
+      >
+        {/* Brand */}
         <div>
-          <h1 className="text-[56px] font-bold tracking-[0.1em] text-[#2a2a24] dark:text-[#d1d1c1] uppercase leading-none glow-text mono">
+          <p className="text-[8px] mono font-bold uppercase tracking-[0.35em] text-[#2a2a22] mb-5">
+            Observer Protocol 3.0
+          </p>
+          <h1 className="text-[52px] font-bold tracking-[0.08em] text-[#d1d1c1] uppercase leading-none mono glow-text">
             Coherence
           </h1>
-          <p className="text-[18px] text-[#4a483a] dark:text-[#908e7e] mt-3 font-light tracking-wide">
-            Version control for <span className="font-semibold text-[#2a2a24] dark:text-[#d1d1c1]">your thinking.</span>
+          <p className="text-[14px] text-[#3a3830] mt-4 font-light mono">
+            Decisions drift.{' '}
+            <span className="font-semibold text-[#7a786a]">Anchors don't.</span>
           </p>
         </div>
 
-        {/* Stacked manila folders */}
-        <div className="flex flex-col gap-0">
-          {FEATURES.map((f, i) => {
-            const folderColors = [
-              { body: '#f5e9a8', tab: '#e8d46e', border: '#c8a830', shadow: '#b89020', text: '#3a2a0a' },
-              { body: '#f0e090', tab: '#e0cc60', border: '#c0a020', shadow: '#a88010', text: '#3a2a0a' },
-              { body: '#f7edba', tab: '#ecdb7a', border: '#d0b040', shadow: '#c09828', text: '#3a2a0a' },
-              { body: '#ede4a0', tab: '#dfd070', border: '#bca028', shadow: '#a88818', text: '#3a2a0a' },
-            ];
-            const c = folderColors[i];
-            return (
-              <div key={f.key} style={{ marginTop: i === 0 ? 0 : -2, zIndex: i + 1, position: 'relative' }}>
-                {/* Tab row */}
-                <div className="flex items-end">
-                  <div
-                    className="px-4 py-1.5 flex items-center gap-2"
-                    style={{
-                      background: c.tab,
-                      border: `1.5px solid ${c.border}`,
-                      borderBottom: 'none',
-                      borderRadius: '5px 5px 0 0',
-                      minWidth: '160px',
-                      boxShadow: `-1px -1px 0 ${c.shadow}`,
-                    }}
-                  >
-                    <span className="text-[8px] mono font-bold" style={{ color: c.shadow }}>{f.num}</span>
-                    <span className="text-[11px] mono font-black uppercase tracking-widest" style={{ color: c.text }}>{f.label}</span>
-                    <div className={`w-1.5 h-1.5 rounded-full ${f.dot}`} />
-                  </div>
-                  <div style={{ flex: 1, borderBottom: `1.5px solid ${c.border}` }} />
-                  <div
-                    className="px-3 py-1.5"
-                    style={{
-                      background: c.tab,
-                      border: `1.5px solid ${c.border}`,
-                      borderBottom: 'none',
-                      borderRadius: '5px 5px 0 0',
-                    }}
-                  >
-                    <span className={`text-[8px] mono font-bold uppercase tracking-widest ${f.statusColor}`}>{f.status}</span>
-                  </div>
-                </div>
-
-                {/* Folder body */}
-                <div
-                  className="px-5 py-4"
-                  style={{
-                    background: c.body,
-                    border: `1.5px solid ${c.border}`,
-                    borderTop: 'none',
-                    boxShadow: `3px 3px 0 ${c.shadow}`,
-                  }}
-                >
-                  <p className="text-[9px] mono italic mb-2.5" style={{ color: c.shadow }}>— {f.tagline}</p>
-                  {f.content.map((line, li) => (
-                    <div key={li} className="flex items-baseline gap-2.5 py-0.5">
-                      <span className="text-[10px] mono w-4 shrink-0" style={{ color: c.shadow }}>{line.icon}</span>
-                      <span className={`text-[11px] mono ${line.color || ''}`} style={!line.color ? { color: c.text } : {}} >
-                        {line.bold ? <strong>{line.text}</strong> : line.text}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
+        {/* Mock thread grid — blurred preview */}
+        <div className="my-10 relative">
+          <div className="grid grid-cols-2 gap-3">
+            {MOCK_THREADS.map(t => (
+              <MockThreadCard key={t.id} {...t} />
+            ))}
+          </div>
+          {/* Gradient fade + lock overlay */}
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center"
+            style={{
+              background: 'linear-gradient(to bottom, transparent 0%, #121210 85%)',
+            }}
+          />
+          <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center gap-2 pb-2">
+            <p className="text-[11px] mono text-white/25 italic font-light text-center leading-relaxed">
+              need to make a decision? still going back and forth?<br />you're in the right place.
+            </p>
+          </div>
         </div>
+
+        {/* Footer */}
+        <p className="text-[8px] mono text-[#1e1e18] uppercase tracking-[0.3em]">
+          Coherence — Reasoning System
+        </p>
       </div>
 
-      {/* RIGHT — Auth */}
-      <div className="w-full lg:w-[360px] shrink-0 flex flex-col justify-center p-10 lg:p-12 border-t lg:border-t-0 lg:border-l border-[#c0beb0]/40 dark:border-white/10 bg-[#f4f2eb]/80 dark:bg-[#1a1a16]/80">
-        <div className="space-y-7">
+      {/* RIGHT — dark auth panel */}
+      <div
+        className="w-full lg:w-[360px] shrink-0 flex flex-col justify-center p-10 lg:p-14 border-l border-white/5"
+        style={{ background: '#1c1c18' }}
+      >
+        <div className="space-y-8">
 
-          <div className="space-y-2">
-            <p className="text-[9px] mono font-bold uppercase tracking-[0.3em] text-[#b0ae9e] dark:text-[#7a786a]">
+          <div className="space-y-3">
+            <p className="text-[8px] mono font-bold uppercase tracking-[0.35em] text-[#3a3830]">
               Your threads are waiting
             </p>
-            <h2 className="text-[24px] font-bold mono uppercase tracking-tight text-[#2a2a24] dark:text-[#d1d1c1] leading-tight">
+            <h2 className="text-[24px] font-bold mono uppercase tracking-tight text-[#d1d1c1] leading-tight">
               Sign in to access your archive.
             </h2>
-            <p className="text-[12px] text-[#7a786a] leading-relaxed pt-1">
+            <p className="text-[12px] text-[#5a5850] leading-relaxed">
               Your reasoning history is private. Only you can read it.
             </p>
           </div>
 
           {error && (
-            <div className="p-3 border border-red-300/50 bg-red-50 dark:bg-red-900/20 text-[11px] mono text-red-600 dark:text-red-400">
+            <div className="p-3 border border-red-900/50 bg-red-900/20 text-[11px] mono text-red-400">
               {error}
             </div>
           )}
@@ -188,16 +176,16 @@ const LoginScreen: React.FC = () => {
           <button
             onClick={handleGoogleSignIn}
             disabled={loading}
-            className="w-full py-5 flex items-center justify-center gap-3 bg-[#2a2a24] dark:bg-[#d1d1c1] text-white dark:text-[#121210] hover:bg-black dark:hover:bg-white transition-colors disabled:opacity-40 mono text-[11px] font-bold uppercase tracking-[0.2em]"
+            className="w-full py-5 flex items-center justify-center gap-3 bg-[#d1d1c1] text-[#121210] hover:bg-white transition-colors disabled:opacity-40 mono text-[11px] font-bold uppercase tracking-[0.2em]"
           >
             {loading ? (
               <>
-                <span className="w-1.5 h-1.5 rounded-full bg-white dark:bg-[#121210]" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#121210] animate-pulse" />
                 Redirecting...
               </>
             ) : (
               <>
-                <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="#121210">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                   <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                   <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
@@ -208,9 +196,10 @@ const LoginScreen: React.FC = () => {
             )}
           </button>
 
-          <p className="text-[9px] mono font-bold uppercase tracking-[0.3em] text-[#c0beb0] dark:text-[#7a786a]">
-            Observer Protocol 3.0 // Auth Required
+          <p className="text-[8px] mono text-[#2a2a22] uppercase tracking-[0.3em]">
+            Auth Required // v3.0
           </p>
+
         </div>
       </div>
     </div>

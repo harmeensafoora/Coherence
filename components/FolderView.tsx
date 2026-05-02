@@ -15,61 +15,89 @@ interface FolderViewProps {
 
 const FolderView: React.FC<FolderViewProps> = ({ folder, onBack, onUpdate, onDeleteFolder, theme, onToggleTheme }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [retryingFileId, setRetryingFileId] = useState<string | null>(null);
   const [newUpdateText, setNewUpdateText] = useState('');
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
-  const [commitError, setCommitError] = useState<string | null>(null);
+
+  const applyAnalysis = (
+    commitId: string,
+    content: string,
+    result: Awaited<ReturnType<typeof analyzeThinking>>,
+    currentFiles: FileEntry[],
+    currentHistory: Snapshot[]
+  ) => {
+    const { changeSummary, filename, ...newState } = result;
+    const hasDrift = newState.driftDetected.length > 0;
+    const contradictionMsg = hasDrift ? newState.driftDetected[0].message : undefined;
+
+    const analyzedFile: FileEntry = {
+      id: commitId,
+      timestamp: currentFiles.find(f => f.id === commitId)?.timestamp ?? Date.now(),
+      filename: filename || `commit-${currentFiles.length}.txt`,
+      content,
+      status: hasDrift ? 'contradiction' : 'coherent',
+      contradictsWith: contradictionMsg,
+    };
+
+    const newSnapshot: Snapshot = {
+      id: commitId,
+      timestamp: analyzedFile.timestamp,
+      content,
+      state: newState,
+      changeSummary: changeSummary || 'State update committed to thread.',
+    };
+
+    onUpdate({
+      files: currentFiles.map(f => f.id === commitId ? analyzedFile : f),
+      state: newState,
+      history: [...currentHistory.filter(s => s.id !== commitId).slice(-19), newSnapshot],
+    });
+  };
 
   const handleCommit = async () => {
     if (!newUpdateText.trim()) return;
 
     setIsAnalyzing(true);
-    setCommitError(null);
+
+    const commitId = crypto.randomUUID();
+    const pendingFile: FileEntry = {
+      id: commitId,
+      timestamp: Date.now(),
+      filename: `commit-${folder.files.length + 1}.txt`,
+      content: newUpdateText,
+      status: 'pending',
+    };
+
+    // Save immediately — the commit is never lost
+    const filesWithPending = [...folder.files, pendingFile];
+    onUpdate({ files: filesWithPending });
+    setNewUpdateText('');
+    setSelectedFileId(commitId);
+
     try {
       const result = await analyzeThinking(newUpdateText, folder.state);
-      const { changeSummary, filename, ...newState } = result;
-
-      const hasDrift = newState.driftDetected.length > 0;
-      const contradictionMsg = hasDrift ? newState.driftDetected[0].message : undefined;
-
-      const commitId = crypto.randomUUID();
-
-      const newFile: FileEntry = {
-        id: commitId,
-        timestamp: Date.now(),
-        filename: filename || `commit-${folder.files.length + 1}.log`,
-        content: newUpdateText,
-        status: hasDrift ? 'contradiction' : 'coherent',
-        contradictsWith: contradictionMsg
-      };
-
-      const newSnapshot: Snapshot = {
-        id: commitId,
-        timestamp: Date.now(),
-        content: newUpdateText,
-        state: newState,
-        changeSummary: changeSummary || 'State update committed to thread.'
-      };
-
-      onUpdate({
-        files: [...folder.files, newFile],
-        state: newState,
-        history: [...folder.history.slice(-19), newSnapshot]
-      });
-
-      setNewUpdateText('');
-      setSelectedFileId(newFile.id);
+      applyAnalysis(commitId, newUpdateText, result, filesWithPending, folder.history);
     } catch (err: any) {
-      console.error("Commit failed:", err);
-      const msg = err?.message || '';
-      if (msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('quota')) {
-        setCommitError('API quota exceeded. You\'ve hit the Gemini free tier limit. Wait a minute and try again, or check your usage at ai.dev/rate-limit.');
-      } else if (msg.includes('404') || msg.includes('not found')) {
-        setCommitError('Model not available. Check your Gemini API key has access to the configured model.');
-      } else {
-        setCommitError('Commit failed. Check your connection and try again.');
-      }
+      // Analysis failed — commit stays as pending, user can retry later
+      console.error("Analysis failed, commit saved as pending:", err);
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const handleRetryAnalysis = async (file: FileEntry) => {
+    if (retryingFileId) return;
+    setRetryingFileId(file.id);
+    try {
+      // Use the state before this file was committed (last snapshot before it)
+      const priorSnapshot = folder.history.filter(s => s.timestamp < file.timestamp).slice(-1)[0];
+      const priorState = priorSnapshot?.state ?? folder.state;
+      const result = await analyzeThinking(file.content, priorState);
+      applyAnalysis(file.id, file.content, result, folder.files, folder.history);
+    } catch (err) {
+      console.error("Retry analysis failed:", err);
+    } finally {
+      setRetryingFileId(null);
     }
   };
 
@@ -208,13 +236,6 @@ const FolderView: React.FC<FolderViewProps> = ({ folder, onBack, onUpdate, onDel
                   onChange={(e) => setNewUpdateText(e.target.value)}
                 />
                 
-                {commitError && (
-                  <div className="flex items-start justify-between gap-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 animate-in fade-in slide-in-from-top-1">
-                    <p className="text-[11px] mono text-red-700 dark:text-red-400 leading-relaxed">{commitError}</p>
-                    <button onClick={() => setCommitError(null)} className="text-[10px] mono text-red-400 hover:text-red-700 dark:hover:text-red-300 font-bold shrink-0">[×]</button>
-                  </div>
-                )}
-
                 <div className="flex items-center justify-end pt-8 border-t border-[#f0eee6] dark:border-white/10">
                   <button
                     disabled={isAnalyzing || !newUpdateText.trim()}
@@ -235,7 +256,26 @@ const FolderView: React.FC<FolderViewProps> = ({ folder, onBack, onUpdate, onDel
                      </p>
                   </div>
                 )}
-                
+
+                {selectedFile?.status === 'pending' && (
+                  <div className="flex items-center justify-between p-4 bg-[#f4f2eb] dark:bg-white/5 border border-[#c0beb0]/40 dark:border-white/10">
+                    <div className="flex items-center gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600" />
+                      <p className="text-[10px] mono text-[#908e7e] dark:text-[#7a786a] uppercase tracking-widest">
+                        {retryingFileId === selectedFile.id ? 'Analysing...' : 'Analysis pending'}
+                      </p>
+                    </div>
+                    {retryingFileId !== selectedFile.id && (
+                      <button
+                        onClick={() => handleRetryAnalysis(selectedFile)}
+                        className="text-[9px] mono font-bold uppercase tracking-widest text-[#2a2a24] dark:text-[#d1d1c1] border border-[#c0beb0]/40 dark:border-white/10 px-3 py-1.5 hover:bg-white dark:hover:bg-white/10 transition-colors"
+                      >
+                        Retry
+                      </button>
+                    )}
+                  </div>
+                )}
+
                 <div className="text-[16px] leading-[1.9] text-[#3a3a34] dark:text-[#d1d1c1] whitespace-pre-wrap font-light">
                   {selectedFile?.content}
                 </div>

@@ -28,7 +28,7 @@ export interface FileEntry {
   timestamp: number;
   filename: string;
   content: string;
-  status: 'coherent' | 'contradiction' | 'unresolved';
+  status: 'coherent' | 'contradiction' | 'unresolved' | 'pending';
   contradictsWith?: string; // Descriptive string about what it contradicts
 }
 
