@@ -1,5 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
+
+const USE_CASES = [
+  "The job you keep reconsidering.",
+  "The flat you can't commit to.",
+  "The relationship you keep revisiting.",
+  "The career pivot you've postponed twice.",
+  "The decision you've already made, and unmade.",
+  "The city you're thinking of leaving.",
+  "The offer that felt wrong but you took anyway.",
+];
+
+const UseCaseTicker: React.FC = () => {
+  const [index, setIndex] = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setIndex(i => (i + 1) % USE_CASES.length);
+        setVisible(true);
+      }, 400);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <p style={{
+      fontSize: 12,
+      fontFamily: 'monospace',
+      color: '#908e7e',
+      marginTop: 10,
+      fontStyle: 'italic',
+      transition: 'opacity 0.4s ease',
+      opacity: visible ? 1 : 0,
+      minHeight: 20,
+    }}>
+      {USE_CASES[index]}
+    </p>
+  );
+};
 
 /* ─── Paper slip ─── */
 interface PaperProps {
@@ -149,6 +190,7 @@ const LoginScreen: React.FC = () => {
             <span style={{ color: '#b0ae9e' }}>Decisions drift.</span>{' '}
             <span style={{ fontWeight: 600, color: '#4a4840' }}>Anchors don't.</span>
           </p>
+          <UseCaseTicker />
         </div>
 
         {/* 2×2 grid */}
