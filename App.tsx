@@ -3,6 +3,7 @@ import { User } from '@supabase/supabase-js';
 import Home from './components/Home';
 import FolderView from './components/FolderView';
 import LoginScreen from './components/LoginScreen';
+import OnboardingTour, { TourStep } from './components/OnboardingTour';
 import { supabase } from './services/supabaseClient';
 import { Folder, ReasoningState } from './types';
 
@@ -15,12 +16,89 @@ const INITIAL_STATE: ReasoningState = {
   driftDetected: []
 };
 
+const TOUR_STEPS: TourStep[] = [
+  {
+    id: 'create-thread',
+    target: 'create-thread',
+    route: 'home',
+    title: 'Start a thread',
+    body: 'A thread is where one decision or line of thinking lives. Start here when something keeps coming back.',
+    placement: 'bottom',
+  },
+  {
+    id: 'thread-name',
+    target: 'thread-name',
+    route: 'home',
+    title: 'Name the decision',
+    body: 'Use a short, specific name. Future you should know what this was about at a glance.',
+    placement: 'right',
+  },
+  {
+    id: 'thread-intent',
+    target: 'thread-intent',
+    route: 'home',
+    title: 'State the intent',
+    body: 'Write the decision you are trying to make, or the question you want to keep honest over time.',
+    placement: 'right',
+  },
+  {
+    id: 'thread-anchors',
+    target: 'thread-anchors',
+    route: 'home',
+    title: 'Set anchors',
+    body: 'Anchors are the rules Coherence protects: constraints, values, dealbreakers, or promises you do not want to quietly rewrite.',
+    placement: 'left',
+  },
+  {
+    id: 'mount-thread',
+    target: 'mount-thread',
+    route: 'home',
+    title: 'Mount the thread',
+    body: 'When the name, intent, and anchors feel good enough, create the thread. The walkthrough continues inside it.',
+    placement: 'top',
+  },
+  {
+    id: 'commit-editor',
+    target: 'commit-editor',
+    route: 'folder',
+    title: 'Write a commit',
+    body: 'A commit is a snapshot of your reasoning right now: what changed, what you believe, what feels unresolved.',
+    placement: 'right',
+  },
+  {
+    id: 'commit-button',
+    target: 'commit-button',
+    route: 'folder',
+    title: 'Commit the snapshot',
+    body: 'Coherence saves the entry, analyzes it, and compares it against your existing state and anchors.',
+    placement: 'top',
+  },
+  {
+    id: 'coherence-state',
+    target: 'coherence-state',
+    route: 'folder',
+    title: 'Read the state',
+    body: 'This panel is the live map of your reasoning: anchors, intent, constraints, drift, and the timeline of changes.',
+    placement: 'left',
+  },
+  {
+    id: 'commit-index',
+    target: 'commit-index',
+    route: 'folder',
+    title: 'Revisit the trail',
+    body: 'The commit index lets you move through past snapshots and see how the story evolved.',
+    placement: 'right',
+  },
+];
+
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [loadingFolders, setLoadingFolders] = useState(false);
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
+  const [tourActive, setTourActive] = useState(false);
+  const [tourStep, setTourStep] = useState(0);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     const saved = localStorage.getItem('coherence_theme');
     return (saved as 'light' | 'dark') || 'light';
@@ -44,7 +122,13 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!user) {
       setFolders([]);
+      setTourActive(false);
       return;
+    }
+    const tourKey = `coherence_onboarding_seen_${user.id}`;
+    if (!localStorage.getItem(tourKey)) {
+      setTourActive(true);
+      setTourStep(0);
     }
     loadFolders();
   }, [user]);
@@ -114,6 +198,9 @@ const App: React.FC = () => {
 
     setFolders(prev => [newFolder, ...prev]);
     setActiveFolderId(newFolder.id);
+    if (tourActive && tourStep <= 4) {
+      setTourStep(5);
+    }
 
     await supabase.from('threads').insert({
       id: newFolder.id,
@@ -125,6 +212,38 @@ const App: React.FC = () => {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     setActiveFolderId(null);
+  };
+
+  const finishTour = () => {
+    if (user) {
+      localStorage.setItem(`coherence_onboarding_seen_${user.id}`, 'true');
+    }
+    setTourActive(false);
+  };
+
+  const handleTourNext = () => {
+    const nextStep = Math.min(tourStep + 1, TOUR_STEPS.length - 1);
+    const next = TOUR_STEPS[nextStep];
+    if (next.route === 'folder' && !activeFolderId && !folders[0]) {
+      return;
+    }
+    if (next.route === 'home') {
+      setActiveFolderId(null);
+    } else if (next.route === 'folder' && !activeFolderId && folders[0]) {
+      setActiveFolderId(folders[0].id);
+    }
+    setTourStep(nextStep);
+  };
+
+  const handleTourBack = () => {
+    const prevStep = Math.max(tourStep - 1, 0);
+    const prev = TOUR_STEPS[prevStep];
+    if (prev.route === 'home') {
+      setActiveFolderId(null);
+    } else if (prev.route === 'folder' && !activeFolderId && folders[0]) {
+      setActiveFolderId(folders[0].id);
+    }
+    setTourStep(prevStep);
   };
 
   if (loadingAuth) {
@@ -153,27 +272,53 @@ const App: React.FC = () => {
 
   if (activeFolderId && activeFolder) {
     return (
-      <FolderView
-        folder={activeFolder}
-        onBack={() => setActiveFolderId(null)}
-        onUpdate={(updates) => updateFolder(activeFolder.id, updates)}
-        onDeleteFolder={() => deleteFolder(activeFolder.id)}
-        theme={theme}
-        onToggleTheme={toggleTheme}
-      />
+      <>
+        <FolderView
+          folder={activeFolder}
+          onBack={() => setActiveFolderId(null)}
+          onUpdate={(updates) => updateFolder(activeFolder.id, updates)}
+          onDeleteFolder={() => deleteFolder(activeFolder.id)}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+          onboardingStep={tourActive ? TOUR_STEPS[tourStep]?.id : undefined}
+        />
+        {tourActive && (
+          <OnboardingTour
+            steps={TOUR_STEPS}
+            currentStep={tourStep}
+            onNext={handleTourNext}
+            onBack={handleTourBack}
+            onSkip={finishTour}
+            onFinish={finishTour}
+          />
+        )}
+      </>
     );
   }
 
   return (
-    <Home
-      folders={folders}
-      onSelectFolder={setActiveFolderId}
-      onCreateFolder={createFolder}
-      theme={theme}
-      onToggleTheme={toggleTheme}
-      onSignOut={handleSignOut}
-      userEmail={user.email}
-    />
+    <>
+      <Home
+        folders={folders}
+        onSelectFolder={setActiveFolderId}
+        onCreateFolder={createFolder}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        onSignOut={handleSignOut}
+        userEmail={user.email}
+        onboardingStep={tourActive ? TOUR_STEPS[tourStep]?.id : undefined}
+      />
+      {tourActive && (
+        <OnboardingTour
+          steps={TOUR_STEPS}
+          currentStep={tourStep}
+          onNext={handleTourNext}
+          onBack={handleTourBack}
+          onSkip={finishTour}
+          onFinish={finishTour}
+        />
+      )}
+    </>
   );
 };
 

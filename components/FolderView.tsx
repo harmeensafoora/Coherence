@@ -11,6 +11,7 @@ interface FolderViewProps {
   onDeleteFolder: () => void;
   theme: 'light' | 'dark';
   onToggleTheme: () => void;
+  onboardingStep?: string;
 }
 
 type CommitPhase = 'idle' | 'saving' | 'analyzing';
@@ -94,7 +95,7 @@ const EmptyThreadState: React.FC = () => (
   </div>
 );
 
-const FolderView: React.FC<FolderViewProps> = ({ folder, onBack, onUpdate, onDeleteFolder, theme, onToggleTheme }) => {
+const FolderView: React.FC<FolderViewProps> = ({ folder, onBack, onUpdate, onDeleteFolder, theme, onToggleTheme, onboardingStep }) => {
   const [commitPhase, setCommitPhase] = useState<CommitPhase>('idle');
   const [retryingFileId, setRetryingFileId] = useState<string | null>(null);
   const [newUpdateText, setNewUpdateText] = useState('');
@@ -104,6 +105,20 @@ const FolderView: React.FC<FolderViewProps> = ({ folder, onBack, onUpdate, onDel
 
   // Keep isAnalyzing derived from commitPhase for CoherencePanel compatibility
   const isAnalyzing = commitPhase === 'analyzing';
+
+  useEffect(() => {
+    if (onboardingStep === 'commit-index') {
+      setShowMobileNav(true);
+      setShowMobilePanel(false);
+    } else if (onboardingStep === 'coherence-state') {
+      setShowMobilePanel(true);
+      setShowMobileNav(false);
+    } else if (onboardingStep === 'commit-editor' || onboardingStep === 'commit-button') {
+      setShowMobileNav(false);
+      setShowMobilePanel(false);
+      setSelectedFileId(null);
+    }
+  }, [onboardingStep]);
 
   const applyAnalysis = (
     commitId: string,
@@ -247,7 +262,10 @@ const FolderView: React.FC<FolderViewProps> = ({ folder, onBack, onUpdate, onDel
       )}
 
       {/* Left Sidebar: Commit Index */}
-      <nav className={`w-64 bg-[#f4f2eb]/80 dark:bg-[#1a1a16]/80 backdrop-blur-sm border-r border-[#c0beb0]/30 dark:border-white/10 flex flex-col h-full overflow-hidden transition-transform duration-300 fixed md:relative inset-y-0 left-0 z-50 md:z-auto md:translate-x-0 ${showMobileNav ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+      <nav
+        data-tour="commit-index"
+        className={`w-64 bg-[#f4f2eb]/80 dark:bg-[#1a1a16]/80 backdrop-blur-sm border-r border-[#c0beb0]/30 dark:border-white/10 flex flex-col h-full overflow-hidden transition-transform duration-300 fixed md:relative inset-y-0 left-0 z-50 md:z-auto md:translate-x-0 ${showMobileNav ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
+      >
         <header className="p-6 border-b border-[#c0beb0]/20 dark:border-white/10">
           <div className="flex items-center gap-2 mb-4">
             <span className="text-[10px] font-bold mono uppercase tracking-[0.2em] text-[#908e7e] dark:text-[#7a786a]">Commit Index</span>
@@ -358,6 +376,7 @@ const FolderView: React.FC<FolderViewProps> = ({ folder, onBack, onUpdate, onDel
 
                 <textarea
                   autoFocus
+                  data-tour="commit-editor"
                   placeholder="Where is your thinking right now? What are you leaning towards, what's pulling you back, what feels unresolved..."
                   className="w-full min-h-[50vh] text-[16px] leading-[1.8] text-[#3a3a34] dark:text-[#d1d1c1] bg-transparent resize-none border-none outline-none placeholder-[#c0beb0]/50 dark:placeholder-white/10 font-light"
                   value={newUpdateText}
@@ -373,6 +392,7 @@ const FolderView: React.FC<FolderViewProps> = ({ folder, onBack, onUpdate, onDel
                   <button
                     disabled={commitPhase !== 'idle' || !newUpdateText.trim()}
                     onClick={handleCommit}
+                    data-tour="commit-button"
                     className="px-8 py-3 text-[10px] font-bold mono uppercase tracking-widest bg-[#2a2a24] dark:bg-[#d1d1c1] text-white dark:text-[#121210] hover:bg-black dark:hover:bg-white transition-all disabled:opacity-30 flex items-center gap-2.5"
                   >
                     {commitPhase !== 'idle' && (
@@ -417,7 +437,10 @@ const FolderView: React.FC<FolderViewProps> = ({ folder, onBack, onUpdate, onDel
       </main>
 
       {/* Side Column: Coherence Monitor */}
-      <aside className={`w-80 md:w-96 bg-[#f4f2eb]/90 dark:bg-[#1a1a16]/90 backdrop-blur-sm flex flex-col h-full border-l border-[#c0beb0]/30 dark:border-white/10 shadow-[-4px_0_12px_rgba(0,0,0,0.02)] transition-transform duration-300 fixed md:relative inset-y-0 right-0 z-50 md:z-auto md:translate-x-0 ${showMobilePanel ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}>
+      <aside
+        data-tour="coherence-state"
+        className={`w-80 md:w-96 bg-[#f4f2eb]/90 dark:bg-[#1a1a16]/90 backdrop-blur-sm flex flex-col h-full border-l border-[#c0beb0]/30 dark:border-white/10 shadow-[-4px_0_12px_rgba(0,0,0,0.02)] transition-transform duration-300 fixed md:relative inset-y-0 right-0 z-50 md:z-auto md:translate-x-0 ${showMobilePanel ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}
+      >
         <CoherencePanel
           state={folder.state}
           history={folder.history}

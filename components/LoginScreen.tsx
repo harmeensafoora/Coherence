@@ -1,153 +1,620 @@
 import React, { useState } from 'react';
 import { supabase } from '../services/supabaseClient';
 
-/* ─── Small paper slip — fixed size, not full-width ─── */
-interface PaperProps {
-  x: number;
-  y: number;
-  rotate: number;
-  rotateHover: number;
-  dxHover?: number;
-  dyHover?: number;
-  bg?: string;
-  hovered?: boolean;
-  children: React.ReactNode;
-}
+type UseCaseStatus = 'STABLE' | 'DRIFTED';
 
-const Paper: React.FC<PaperProps> = ({
-  x, y, rotate, rotateHover, dxHover = 0, dyHover = -10,
-  bg = '#fff', hovered = false, children,
-}) => (
-  <div style={{
-    position: 'absolute',
-    top: y,
-    left: x,
-    width: 148,
-    height: 78,
-    background: bg,
-    borderRadius: 3,
-    padding: '8px 10px',
-    boxShadow: hovered ? '0 8px 20px rgba(0,0,0,0.16)' : '0 2px 8px rgba(0,0,0,0.10)',
-    transform: hovered
-      ? `rotate(${rotateHover}deg) translate(${dxHover}px,${dyHover}px)`
-      : `rotate(${rotate}deg)`,
-    transformOrigin: 'bottom center',
-    transition: 'transform 0.35s cubic-bezier(0.34,1.4,0.64,1), box-shadow 0.25s ease',
-    overflow: 'hidden',
-    border: '0.5px solid rgba(0,0,0,0.08)',
-    zIndex: 3,
-  }}>
-    {children}
-  </div>
-);
-
-/* ─── Thread folder card ─── */
-interface ThreadCardProps {
+interface UseCase {
+  id: string;
+  title: string;
+  status: UseCaseStatus;
+  commitCount: number;
   folderColor: string;
   tabColor: string;
   borderColor: string;
-  status: 'STABLE' | 'DRIFTED';
-  threadName: string;
-  commitCount: number;
-  lastCommit: string;
-  children: React.ReactNode;
+  paperBg: string;
+  summary: string;
+  detail: string;
+  notes: string[];
 }
 
-const ThreadCard: React.FC<ThreadCardProps> = ({
-  folderColor, tabColor, borderColor,
-  status, threadName, commitCount, lastCommit, children,
-}) => {
-  const [hovered, setHovered] = useState(false);
-  const statusColor = status === 'DRIFTED' ? '#b45309' : '#2e7d32';
-  const statusDot   = status === 'DRIFTED' ? '#f59e0b' : '#4caf50';
+const useCases: UseCase[] = [
+  {
+    id: 'quit-job',
+    title: 'Quit_The_Job',
+    status: 'DRIFTED',
+    commitCount: 5,
+    folderColor: '#daeef4',
+    tabColor: '#8cc8d8',
+    borderColor: '#7ab8c8',
+    paperBg: '#f0fafd',
+    summary: 'Week 1: leaving. Week 3: raise. Week 5: wanting out again, but from fear.',
+    detail: 'Coherence shows the shift from job-fit reasoning to fear-based reasoning.',
+    notes: ['Anchor: do not make fear-based decisions', 'Raise changed the logic in week 3', 'Week 5 entry flagged immediately'],
+  },
+  {
+    id: 'where-to-live',
+    title: 'Choose_The_City',
+    status: 'DRIFTED',
+    commitCount: 12,
+    folderColor: '#fef3c7',
+    tabColor: '#f5cc40',
+    borderColor: '#e8b820',
+    paperBg: '#fffdf0',
+    summary: 'Rent, commute, family, career. Three weeks in, the original rules start bending.',
+    detail: 'The thread holds the first priorities steady when compromise starts sounding reasonable.',
+    notes: ['Anchor: under GBP 1,500/month', 'Anchor: commute under 45 mins', 'Flat viewing compromised both'],
+  },
+  {
+    id: 'relationship',
+    title: 'Relationship_Call',
+    status: 'STABLE',
+    commitCount: 10,
+    folderColor: '#d8f0dc',
+    tabColor: '#86c890',
+    borderColor: '#74b87e',
+    paperBg: '#f0faf2',
+    summary: 'Tuesday-you wanted space. Saturday-you wanted reassurance. Both are in the file.',
+    detail: 'See what you actually thought across moods before ending it, moving in, or trying long distance.',
+    notes: ['Tuesday entry: need distance', 'Saturday entry: fear of loss', 'Pattern: mood changed, anchor did not'],
+  },
+  {
+    id: 'postgrad-pivot',
+    title: 'Masters_Or_Job',
+    status: 'STABLE',
+    commitCount: 16,
+    folderColor: '#ead6f5',
+    tabColor: '#b880d0',
+    borderColor: '#a870c0',
+    paperBg: '#f8f0ff',
+    summary: 'A parent call, a LinkedIn post, a shiny course page. The plan keeps wobbling.',
+    detail: 'Tracks whether you are moving towards clarity or being pulled by whoever spoke last.',
+    notes: ['Masters rationale still consistent', 'LinkedIn post triggered pivot', 'Parent call changed risk tolerance'],
+  },
+  {
+    id: 'freelance-fulltime',
+    title: 'Freelance_Vs_FT',
+    status: 'DRIFTED',
+    commitCount: 13,
+    folderColor: '#f5ded3',
+    tabColor: '#d99b7f',
+    borderColor: '#c8876b',
+    paperBg: '#fff4ef',
+    summary: 'Bad client week: salary. Good month: freedom. The loop is getting obvious.',
+    detail: 'Anchors stop you from deciding in a bad week what you would regret in a good one.',
+    notes: ['Anchor: keep schedule autonomy', 'Income floor: GBP 3k/month', 'Bad week distorted the conclusion'],
+  },
+  {
+    id: 'family-boundary',
+    title: 'Set_The_Boundary',
+    status: 'DRIFTED',
+    commitCount: 9,
+    folderColor: '#e6e1d8',
+    tabColor: '#b7ad9d',
+    borderColor: '#9f9484',
+    paperBg: '#fbf8f1',
+    summary: 'Address it, cut contact, or set a boundary. The emotional noise is loud.',
+    detail: 'Separates what you believe from what you feel in the moment.',
+    notes: ['Original belief: this needs addressing', 'Commit 4 softened the boundary', 'Drift: peacekeeping over clarity'],
+  },
+  {
+    id: 'get-dog',
+    title: 'Get_A_Dog',
+    status: 'STABLE',
+    commitCount: 8,
+    folderColor: '#dce7f7',
+    tabColor: '#91aad3',
+    borderColor: '#7f9bc6',
+    paperBg: '#f2f6ff',
+    summary: 'You named it. You looked at breeds. Then commitment math closed the tab.',
+    detail: 'Keeps the cute version of the decision in the same room as the daily responsibility.',
+    notes: ['Anchor: can handle daily care', 'Travel schedule still unresolved', 'Decision paused, not abandoned'],
+  },
+  {
+    id: 'delete-app',
+    title: 'Delete_The_App',
+    status: 'DRIFTED',
+    commitCount: 18,
+    folderColor: '#ffdfe4',
+    tabColor: '#e58ca0',
+    borderColor: '#d37288',
+    paperBg: '#fff2f5',
+    summary: 'Eight months on the app. Every Sunday becomes one more week.',
+    detail: 'Flags the difference between actually wanting to date and swiping because boredom is nearby.',
+    notes: ['Anchor: stop swiping out of boredom', 'Commit 12: one more week again', 'Drift: habit disguised as hope'],
+  },
+  {
+    id: 'book-trip',
+    title: 'Book_The_Trip',
+    status: 'STABLE',
+    commitCount: 6,
+    folderColor: '#ddf0ed',
+    tabColor: '#7fc4b9',
+    borderColor: '#6ab3a8',
+    paperBg: '#f1fffc',
+    summary: 'Nearly booked for six months. Somehow there is always a reason to wait.',
+    detail: 'Shows whether caution is useful planning or just a softer name for delay.',
+    notes: ['Budget already works', 'Dates chosen twice', 'Next commit must be booking or no'],
+  },
+  {
+    id: 'ask-raise',
+    title: 'Ask_For_Raise',
+    status: 'DRIFTED',
+    commitCount: 7,
+    folderColor: '#efe3cd',
+    tabColor: '#caa15d',
+    borderColor: '#b88f4f',
+    paperBg: '#fff8e8',
+    summary: 'You know you deserve it. You prepared. The meeting keeps moving.',
+    detail: 'Records when preparation has become a socially acceptable form of avoidance.',
+    notes: ['Evidence doc complete', 'Meeting rescheduled twice', 'Anchor: ask before month end'],
+  },
+  {
+    id: 'go-vegan',
+    title: 'Go_Vegan',
+    status: 'DRIFTED',
+    commitCount: 11,
+    folderColor: '#d9efd0',
+    tabColor: '#8abd72',
+    borderColor: '#78aa62',
+    paperBg: '#f3ffed',
+    summary: 'Three failed attempts. Every burger appearance collapses the anchors.',
+    detail: 'Turns the pattern into something visible instead of another private reset.',
+    notes: ['Anchor: no meat on weekdays', 'Burger reset happened again', 'Plan needs friction, not shame'],
+  },
+];
 
-  const childrenWithHover = React.Children.map(children, child =>
-    React.isValidElement(child)
-      ? React.cloneElement(child as React.ReactElement<any>, { hovered })
-      : child
-  );
+const text = (size = 9): React.CSSProperties => ({
+  fontSize: size,
+  fontFamily: 'monospace',
+  color: '#3a3a34',
+  lineHeight: 1.55,
+  margin: 0,
+});
+
+const marqueeStyles = `
+  .signin-marquee-page {
+    position: relative;
+    min-height: 100vh;
+    min-height: 100svh;
+    overflow: hidden;
+    background: #f0ede8;
+    background-image:
+      linear-gradient(rgba(0,0,0,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.035) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .signin-marquee-page::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(250,249,246,0.88) 0%, rgba(250,249,246,0.62) 34%, rgba(240,237,232,0.16) 72%);
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .signin-marquee-field {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 46px;
+    transform: rotate(-2deg) scale(1.04);
+    z-index: 1;
+  }
+
+  .signin-marquee-row {
+    display: flex;
+    width: max-content;
+    gap: 28px;
+    animation: signin-marquee 78s linear infinite;
+  }
+
+  .signin-marquee-row.mobile-only {
+    display: none;
+  }
+
+  .signin-marquee-row.reverse {
+    animation-name: signin-marquee-reverse;
+    margin-left: -360px;
+  }
+
+  .signin-marquee-row:hover,
+  .signin-marquee-row:focus-within {
+    animation-play-state: paused;
+  }
+
+  .signin-flip-card {
+    width: 316px;
+    height: 336px;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    perspective: 1000px;
+    flex: 0 0 auto;
+  }
+
+  .signin-flip-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .signin-flip-card:hover .signin-flip-inner,
+  .signin-flip-card:focus-visible .signin-flip-inner,
+  .signin-flip-card.is-flipped .signin-flip-inner {
+    transform: rotateY(180deg);
+  }
+
+  .signin-card-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+  }
+
+  .signin-card-back {
+    transform: rotateY(180deg);
+  }
+
+  .signin-center {
+    position: relative;
+    z-index: 4;
+    min-height: 100vh;
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px;
+  }
+
+  .signin-console {
+    width: min(100%, 520px);
+    background: rgba(250, 249, 246, 0.86);
+    border: 1px solid rgba(26, 26, 24, 0.12);
+    box-shadow: 8px 8px 0 rgba(26, 26, 24, 0.18), 0 28px 80px rgba(26, 26, 24, 0.16);
+    backdrop-filter: blur(12px);
+    padding: 36px;
+    text-align: center;
+  }
+
+  @keyframes signin-marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(calc(-50% - 14px)); }
+  }
+
+  @keyframes signin-marquee-reverse {
+    from { transform: translateX(calc(-50% - 14px)); }
+    to { transform: translateX(0); }
+  }
+
+  @media (max-width: 720px) {
+    .signin-marquee-page {
+      min-height: 100svh;
+    }
+
+    .signin-marquee-page::before {
+      background: radial-gradient(circle at center, rgba(250,249,246,0.84) 0%, rgba(250,249,246,0.54) 36%, rgba(240,237,232,0.04) 76%);
+    }
+
+    .signin-marquee-field {
+      inset: -228px -270px -177px;
+      justify-content: space-between;
+      gap: 0;
+      padding: 0;
+      transform: scale(0.62);
+      transform-origin: center center;
+    }
+
+    .signin-marquee-row {
+      display: flex;
+      gap: 54px;
+      animation-duration: 64s;
+    }
+
+    .signin-marquee-row.mobile-only {
+      display: flex;
+    }
+
+    .signin-marquee-row.reverse {
+      margin-left: -360px;
+    }
+
+    .signin-marquee-row:nth-child(1) {
+      margin-left: -60px;
+    }
+
+    .signin-marquee-row:nth-child(2) {
+      margin-left: -430px;
+    }
+
+    .signin-marquee-row:nth-child(3) {
+      margin-left: -220px;
+    }
+
+    .signin-marquee-row:nth-child(4) {
+      margin-left: -560px;
+    }
+
+    .signin-flip-card {
+      width: 270px;
+      height: 306px;
+    }
+
+    .signin-center {
+      align-items: center;
+      padding: 18px;
+    }
+
+    .signin-console {
+      width: min(100%, 348px);
+      padding: 24px 18px;
+      box-shadow: 5px 5px 0 rgba(26, 26, 24, 0.18), 0 20px 60px rgba(26, 26, 24, 0.14);
+    }
+  }
+
+  @media (max-width: 420px) {
+    .signin-marquee-field {
+      inset: -269px -286px -216px;
+      padding: 0;
+      transform: scale(0.56);
+    }
+
+    .signin-flip-card {
+      width: 272px;
+      height: 312px;
+    }
+
+    .signin-console {
+      width: min(100%, 332px);
+      padding: 22px 16px;
+    }
+
+    .signin-console button {
+      letter-spacing: 0.12em !important;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .signin-marquee-row {
+      animation-play-state: paused;
+    }
+
+    .signin-flip-inner {
+      transition: none;
+    }
+  }
+`;
+
+const FolderFace = ({ useCase }: { useCase: UseCase }) => {
+  const isDrifted = useCase.status === 'DRIFTED';
 
   return (
-    <div
-      style={{ position: 'relative', paddingTop: 72, cursor: 'pointer' }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      {childrenWithHover}
+    <div style={{ position: 'relative', height: '100%', paddingTop: 72 }}>
+      <div style={{
+        position: 'absolute',
+        top: 6,
+        left: 28,
+        right: 22,
+        height: 108,
+        background: useCase.paperBg,
+        borderRadius: 4,
+        border: '1px solid rgba(0,0,0,0.07)',
+        boxShadow: '0 8px 18px rgba(0,0,0,0.12)',
+        transform: 'rotate(-4deg)',
+        padding: '13px 14px',
+        overflow: 'hidden',
+        zIndex: 1,
+      }}>
+        <span style={{
+          display: 'block',
+          fontSize: 7,
+          fontFamily: 'monospace',
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '0.18em',
+          color: '#a0ae9e',
+          marginBottom: 8,
+        }}>
+          Observer Note
+        </span>
+        <p style={{ ...text(9), color: isDrifted ? '#92400e' : '#2e7d32', fontStyle: 'italic' }}>
+          {useCase.detail}
+        </p>
+      </div>
 
-      <div style={{ position: 'relative', zIndex: 10 }}>
-        {/* Tab */}
+      <div style={{ position: 'relative', zIndex: 2 }}>
         <div style={{
-          position: 'absolute', top: -30, left: 0,
-          width: 82, height: 32,
-          background: tabColor,
-          borderRadius: '7px 7px 0 0',
-          border: `1px solid ${borderColor}`,
+          position: 'absolute',
+          top: -34,
+          left: 0,
+          width: 112,
+          height: 36,
+          background: useCase.tabColor,
+          borderRadius: '8px 8px 0 0',
+          border: `1px solid ${useCase.borderColor}`,
           borderBottom: 'none',
         }} />
-        {/* Body */}
         <div style={{
-          background: folderColor,
-          borderRadius: '0 8px 8px 8px',
-          padding: '14px 14px 15px',
-          border: `1px solid ${borderColor}`,
-          display: 'flex', flexDirection: 'column', gap: 8,
-          transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-          transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
-          boxShadow: hovered ? '0 8px 18px rgba(0,0,0,0.10)' : '0 1px 4px rgba(0,0,0,0.05)',
+          height: 246,
+          background: useCase.folderColor,
+          borderRadius: '0 10px 10px 10px',
+          border: `1px solid ${useCase.borderColor}`,
+          boxShadow: '0 10px 24px rgba(0,0,0,0.11)',
+          padding: 20,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
         }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 6 }}>
-            <p style={{
-              fontSize: 10.5, fontFamily: 'monospace', fontWeight: 700,
-              textTransform: 'uppercase', letterSpacing: '0.04em',
-              color: '#1a1a18', margin: 0, lineHeight: 1.3,
-            }}>
-              {threadName}
-            </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-              <span style={{ fontSize: 7, fontFamily: 'monospace', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: statusColor }}>
-                {status}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'flex-start' }}>
+              <p style={{
+                ...text(13),
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.04em',
+                color: '#1a1a18',
+              }}>
+                {useCase.title}
+              </p>
+              <span style={{
+                fontSize: 8,
+                fontFamily: 'monospace',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.12em',
+                color: isDrifted ? '#b45309' : '#2e7d32',
+                whiteSpace: 'nowrap',
+              }}>
+                {useCase.status}
               </span>
-              <div style={{ width: 5, height: 5, borderRadius: '50%', background: statusDot }} />
             </div>
+            <p style={{ ...text(12), color: '#5a5850', fontStyle: 'italic', marginTop: 18 }}>
+              "{useCase.summary}"
+            </p>
           </div>
 
-          <p style={{
-            fontSize: 9.5, fontFamily: 'monospace', color: '#6a6860',
-            lineHeight: 1.5, margin: 0, fontStyle: 'italic',
-            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const,
-            overflow: 'hidden',
+          <div style={{
+            borderTop: `1px solid ${useCase.borderColor}`,
+            paddingTop: 11,
+            display: 'grid',
+            gap: 6,
           }}>
-            "{lastCommit}"
-          </p>
-
-          <p style={{
-            fontSize: 7.5, fontFamily: 'monospace', color: '#b0ae9e',
-            textTransform: 'uppercase', letterSpacing: '0.15em',
-            margin: 0, borderTop: `0.5px solid ${borderColor}`, paddingTop: 8,
-          }}>
-            {commitCount} commits
-          </p>
+            {useCase.notes.slice(0, 2).map((note, index) => (
+              <div key={note} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                <span style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: '50%',
+                  background: index === 0 ? '#4caf50' : isDrifted ? '#f59e0b' : '#86c890',
+                  flexShrink: 0,
+                }} />
+                <span style={{
+                  ...text(8.5),
+                  color: '#5a5850',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}>
+                  {note}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-/* ─── Shared paper text styles ─── */
-const pt = (size = 8): React.CSSProperties => ({
-  fontSize: size, fontFamily: 'monospace', color: '#3a3a34', lineHeight: 1.5, margin: 0,
-});
-const muted: React.CSSProperties = { fontSize: 7, fontFamily: 'monospace', color: '#b0ae9e' };
-const plabel: React.CSSProperties = {
-  fontSize: 6.5, fontFamily: 'monospace', fontWeight: 700,
-  textTransform: 'uppercase', letterSpacing: '0.2em', color: '#b0ae9e', marginBottom: 5,
+const CommitFace = ({ useCase }: { useCase: UseCase }) => {
+  const isDrifted = useCase.status === 'DRIFTED';
+
+  return (
+    <div style={{
+      height: '100%',
+      background: '#faf9f6',
+      border: `1px solid ${useCase.borderColor}`,
+      boxShadow: '0 10px 24px rgba(0,0,0,0.11)',
+      borderRadius: 10,
+      padding: 20,
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+    }}>
+      <div>
+        <p style={{
+          fontSize: 8,
+          fontFamily: 'monospace',
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '0.22em',
+          color: isDrifted ? '#b45309' : '#2e7d32',
+          margin: '0 0 14px',
+        }}>
+          {useCase.status} / {useCase.commitCount} commits
+        </p>
+        <p style={{
+          ...text(16),
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '0.04em',
+          color: '#1a1a18',
+          marginBottom: 14,
+        }}>
+          {useCase.title}
+        </p>
+        <p style={{ ...text(10.5), color: '#5a5850', marginBottom: 14 }}>
+          {useCase.detail}
+        </p>
+      </div>
+
+      <div style={{ display: 'grid', gap: 9 }}>
+        {useCase.notes.map((note, index) => (
+          <div key={note} style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            background: index === 0 ? useCase.paperBg : '#f0ede8',
+            border: '1px solid rgba(0,0,0,0.07)',
+            padding: '9px 10px',
+          }}>
+            <span style={{
+              width: 7,
+              height: 7,
+              borderRadius: '50%',
+              background: index === 0 ? '#4caf50' : isDrifted ? '#f59e0b' : '#86c890',
+              flexShrink: 0,
+            }} />
+              <span style={{ ...text(8.5), color: '#3a3a34' }}>{note}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
 
-/* ─── Login screen ─── */
+const MarqueeCard = ({ useCase }: { useCase: UseCase }) => {
+  const [flipped, setFlipped] = useState(false);
+
+  return (
+    <div
+      className={`signin-flip-card${flipped ? ' is-flipped' : ''}`}
+      tabIndex={0}
+      role="button"
+      aria-label={`${useCase.title} use case`}
+      onClick={() => setFlipped(prev => !prev)}
+      onBlur={() => setFlipped(false)}
+    >
+      <div className="signin-flip-inner">
+        <div className="signin-card-face">
+          <FolderFace useCase={useCase} />
+        </div>
+        <div className="signin-card-face signin-card-back">
+          <CommitFace useCase={useCase} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const MarqueeRow = ({ reverse = false, mobileOnly = false }: { reverse?: boolean; mobileOnly?: boolean }) => {
+  const cards = [...useCases, ...useCases, ...useCases];
+
+  return (
+    <div className={`signin-marquee-row${reverse ? ' reverse' : ''}${mobileOnly ? ' mobile-only' : ''}`}>
+      {cards.map((useCase, index) => (
+        <MarqueeCard key={`${useCase.id}-${index}`} useCase={useCase} />
+      ))}
+    </div>
+  );
+};
+
 const LoginScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleGoogleSignIn = async () => {
     setLoading(true); setError(null);
@@ -159,138 +626,74 @@ const LoginScreen: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row">
+    <div className="signin-marquee-page">
+      <style>{marqueeStyles}</style>
 
-      {/* ── LEFT ── */}
-      <div
-        className="flex-1 flex flex-col justify-center p-10 lg:p-16 gap-14"
-        style={{
-          background: '#f0ede8',
-          backgroundImage:
-            'linear-gradient(rgba(0,0,0,0.03) 1px,transparent 1px),' +
-            'linear-gradient(90deg,rgba(0,0,0,0.03) 1px,transparent 1px)',
-          backgroundSize: '32px 32px',
-        }}
-      >
-        {/* Brand */}
-        <div>
-          <h1 style={{ fontSize: 44, fontWeight: 700, fontFamily: 'monospace', letterSpacing: '0.08em', color: '#1a1a18', textTransform: 'uppercase', lineHeight: 1, margin: 0 }}>
-            Coherence
-          </h1>
-          <p style={{ fontSize: 12, fontFamily: 'monospace', fontWeight: 600, color: '#4a4840', marginTop: 8, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
-            Version control for your thinking
-          </p>
-        </div>
-
-        {/* 2×2 thread grid — capped so cards stay folder-proportioned */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 28, maxWidth: 580 }}>
-
-          {/* 1 — CLIENT SCOPE */}
-          <ThreadCard
-            folderColor="#bde4ec" tabColor="#5aaec0" borderColor="#4a9eb0"
-            status="DRIFTED" threadName="Client_Scope_Q2" commitCount={7}
-            lastCommit="Rebuilt the dashboard. It's cleaner. They didn't ask for it."
-          >
-            <Paper x={18} y={8} rotate={-6} rotateHover={-18} dyHover={-14} bg="#f0fbfd">
-              <p style={plabel}>Observer Note</p>
-              <p style={{ ...pt(), color: '#92400e', fontStyle: 'italic' }}>
-                "'Just a quick addition' — 4 of 7 commits. Anchor violated.
-              </p>
-            </Paper>
-            <Paper x={52} y={14} rotate={5} rotateHover={16} dxHover={8} dyHover={-8} bg="#fff">
-              <span style={muted}>04/05 · 10:22 · DRIFTED</span>
-              <p style={{ ...pt(), marginTop: 4 }}>No out-of-scope work without written approval.</p>
-            </Paper>
-          </ThreadCard>
-
-          {/* 2 — NEET GAP YEAR */}
-          <ThreadCard
-            folderColor="#fde9a2" tabColor="#e8b820" borderColor="#d4a810"
-            status="DRIFTED" threadName="NEET_2026" commitCount={14}
-            lastCommit="Physics done. Skipped chem. YouTube was open the whole time."
-          >
-            <Paper x={16} y={8} rotate={-5} rotateHover={-17} dyHover={-14} bg="#fffef0">
-              <p style={plabel}>Commit Index</p>
-              {[
-                { text: '6h — actually did it', dot: '#4caf50' },
-                { text: "Skipped. 'Catch up'",  dot: '#f59e0b' },
-                { text: 'Skipped again',          dot: '#ef4444' },
-              ].map((r, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3 }}>
-                  <div style={{ width: 4, height: 4, borderRadius: '50%', background: r.dot, flexShrink: 0 }} />
-                  <span style={pt(7.5)}>{r.text}</span>
-                </div>
-              ))}
-            </Paper>
-            <Paper x={50} y={15} rotate={5} rotateHover={15} dxHover={6} dyHover={-8} bg="#fff">
-              <span style={muted}>01/05 · 08:00 · DRIFTED</span>
-              <p style={{ ...pt(), marginTop: 4 }}>Anchor: 6h minimum. No phones until 6 PM.</p>
-            </Paper>
-          </ThreadCard>
-
-          {/* 3 — GO FREELANCE */}
-          <ThreadCard
-            folderColor="#cee8d2" tabColor="#7ab882" borderColor="#6aaa72"
-            status="STABLE" threadName="Go_Freelance" commitCount={9}
-            lastCommit="Declined the Google offer. Runway: 4 months. Terrifying. Staying."
-          >
-            <Paper x={16} y={8} rotate={-5} rotateHover={-16} dyHover={-14} bg="#f0faf2">
-              <p style={plabel}>Anchors</p>
-              <div style={{ borderLeft: '2px solid #7ab882', paddingLeft: 6 }}>
-                <p style={{ ...pt(7.5), marginBottom: 3 }}>No full-time offers</p>
-                <p style={{ ...pt(7.5), marginBottom: 3 }}>Validate before building</p>
-                <p style={pt(7.5)}>First client by month 2</p>
-              </div>
-            </Paper>
-            <Paper x={50} y={15} rotate={4} rotateHover={13} dxHover={6} dyHover={-8} bg="#fff">
-              <span style={muted}>30/04 · 21:14 · STABLE</span>
-              <p style={{ ...pt(), marginTop: 4 }}>Offer declined. Anchor held. Runway above threshold.</p>
-            </Paper>
-          </ThreadCard>
-
-          {/* 4 — LEAVE THE COUNTRY */}
-          <ThreadCard
-            folderColor="#e2ccf0" tabColor="#a46dc0" borderColor="#9460b0"
-            status="STABLE" threadName="Leave_The_Country" commitCount={8}
-            lastCommit="Found a flat in Berlin. Didn't tell anyone yet. Timeline holding."
-          >
-            <Paper x={16} y={8} rotate={-4} rotateHover={-15} dyHover={-14} bg="#faf5ff">
-              <p style={plabel}>Anchors</p>
-              <div style={{ borderLeft: '2px solid #a46dc0', paddingLeft: 6 }}>
-                <p style={{ ...pt(7.5), marginBottom: 3 }}>Relocate by December</p>
-                <p style={{ ...pt(7.5), marginBottom: 3 }}>Don't let guilt shift the date</p>
-                <p style={pt(7.5)}>Role lined up before moving</p>
-              </div>
-            </Paper>
-            <Paper x={50} y={15} rotate={5} rotateHover={15} dxHover={6} dyHover={-8} bg="#fff">
-              <span style={muted}>01/04 · 22:11 · STABLE</span>
-              <p style={{ ...pt(), marginTop: 4 }}>Berlin flat found. Timeline consistent. Anchor intact.</p>
-            </Paper>
-          </ThreadCard>
-
-        </div>
+      <div className="signin-marquee-field">
+        <MarqueeRow />
+        <MarqueeRow reverse />
+        <MarqueeRow mobileOnly />
+        <MarqueeRow reverse mobileOnly />
       </div>
 
-      {/* ── RIGHT ── */}
-      <div
-        className="w-full lg:w-[360px] shrink-0 flex flex-col justify-center p-10 lg:p-14"
-        style={{ background: '#faf9f6', borderLeft: '1px solid rgba(0,0,0,0.06)' }}
-      >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <p style={{ fontSize: 8, fontFamily: 'monospace', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.35em', color: '#c0beb0', margin: 0 }}>
-              Your threads are waiting
-            </p>
-            <h2 style={{ fontSize: 24, fontWeight: 700, fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.03em', color: '#1a1a18', lineHeight: 1.25, margin: 0 }}>
-              Sign in to access your archive.
-            </h2>
-            <p style={{ fontSize: 11.5, fontFamily: 'monospace', color: '#908e7e', lineHeight: 1.7, margin: 0 }}>
-              Your reasoning history is private. Only you can read it.
-            </p>
-          </div>
+      <main className="signin-center">
+        <div className="signin-console">
+          <p style={{
+            fontSize: 8,
+            fontFamily: 'monospace',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.34em',
+            color: '#9a988a',
+            margin: '0 0 18px',
+          }}>
+            Your threads are waiting
+          </p>
+          <h1 style={{
+            fontSize: 'clamp(34px, 11vw, 70px)',
+            fontWeight: 700,
+            fontFamily: 'monospace',
+            letterSpacing: '0.08em',
+            color: '#1a1a18',
+            textTransform: 'uppercase',
+            lineHeight: 0.95,
+            margin: 0,
+          }}>
+            Coherence
+          </h1>
+          <p style={{
+            fontSize: 12,
+            fontFamily: 'monospace',
+            fontWeight: 600,
+            color: '#5a5850',
+            margin: '16px 0 28px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.12em',
+          }}>
+            Version control for your thinking
+          </p>
+          <p style={{
+            fontSize: 12,
+            fontFamily: 'monospace',
+            color: '#706e62',
+            lineHeight: 1.7,
+            margin: '0 auto 28px',
+            maxWidth: 360,
+          }}>
+            Sign in to catch the moment your reasons change before the story rewrites itself.
+          </p>
 
           {error && (
-            <div style={{ padding: '12px 14px', border: '1px solid #fca5a5', background: '#fef2f2', fontSize: 11, fontFamily: 'monospace', color: '#dc2626' }}>
+            <div style={{
+              padding: '12px 14px',
+              border: '1px solid #fca5a5',
+              background: '#fef2f2',
+              fontSize: 11,
+              fontFamily: 'monospace',
+              color: '#dc2626',
+              marginBottom: 18,
+              textAlign: 'left',
+            }}>
               {error}
             </div>
           )}
@@ -299,16 +702,35 @@ const LoginScreen: React.FC = () => {
             onClick={handleGoogleSignIn}
             disabled={loading}
             style={{
-              width: '100%', padding: '16px 0',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
-              background: '#1a1a18', color: '#fff',
-              fontFamily: 'monospace', fontSize: 11, fontWeight: 700,
-              textTransform: 'uppercase', letterSpacing: '0.2em',
-              border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.4 : 1, transition: 'background 0.15s',
+              width: '100%',
+              maxWidth: 330,
+              padding: '17px 0',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 12,
+              background: '#1a1a18',
+              color: '#fff',
+              fontFamily: 'monospace',
+              fontSize: 11,
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.2em',
+              border: 'none',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.4 : 1,
+              transition: 'background 0.15s, transform 0.15s',
             }}
-            onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.background = '#000'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#1a1a18'; }}
+            onMouseEnter={e => {
+              if (!loading) {
+                (e.currentTarget as HTMLButtonElement).style.background = '#000';
+                (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)';
+              }
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLButtonElement).style.background = '#1a1a18';
+              (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)';
+            }}
           >
             {loading ? (
               <><span style={{ width: 6, height: 6, borderRadius: '50%', background: '#fff', display: 'inline-block' }} /> Redirecting...</>
@@ -325,7 +747,7 @@ const LoginScreen: React.FC = () => {
             )}
           </button>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

@@ -10,9 +10,10 @@ interface HomeProps {
   onToggleTheme: () => void;
   onSignOut: () => void;
   userEmail?: string;
+  onboardingStep?: string;
 }
 
-const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, theme, onToggleTheme, onSignOut, userEmail }) => {
+const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, theme, onToggleTheme, onSignOut, userEmail, onboardingStep }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newName, setNewName] = useState('');
   const [newIntent, setNewIntent] = useState('');
@@ -36,6 +37,15 @@ const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, th
 
   const driftCount = folders.filter(f => f.state.driftDetected.length > 0).length;
   const isFormValid = newName.trim().length > 0 && newIntent.trim().length > 0;
+
+  React.useEffect(() => {
+    if (
+      onboardingStep &&
+      ['thread-name', 'thread-intent', 'thread-anchors', 'mount-thread'].includes(onboardingStep)
+    ) {
+      setIsCreating(true);
+    }
+  }, [onboardingStep]);
 
   return (
     <div className="min-h-screen px-4 sm:px-8 md:px-12 py-10 md:py-20 flex flex-col items-center relative z-10 transition-colors duration-300">
@@ -72,6 +82,7 @@ const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, th
             {!isCreating && (
               <button
                 onClick={() => setIsCreating(true)}
+                data-tour="create-thread"
                 className="px-6 py-4 mono text-[10px] font-bold uppercase tracking-[0.2em] bg-[#2a2a24] dark:bg-[#d1d1c1] text-white dark:text-[#121210] hover:bg-black dark:hover:bg-white transition-all flex items-center justify-center gap-2"
               >
                 <span>+ Create Thread</span>
@@ -106,6 +117,7 @@ const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, th
                     <label className="block text-[9px] mono uppercase font-bold text-[#b0ae9e] dark:text-[#7a786a] tracking-widest">Thread Identifier (Name)</label>
                     <input 
                       autoFocus
+                      data-tour="thread-name"
                       type="text"
                       value={newName}
                       onChange={(e) => setNewName(e.target.value)}
@@ -120,6 +132,7 @@ const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, th
                       Core Intent <span className="text-red-400 font-bold">*</span>
                     </label>
                     <textarea 
+                      data-tour="thread-intent"
                       value={newIntent}
                       onChange={(e) => setNewIntent(e.target.value)}
                       placeholder="What is the high-level purpose of this thread?"
@@ -135,6 +148,7 @@ const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, th
                       Anchors (Optional, one per line)
                     </label>
                     <textarea 
+                      data-tour="thread-anchors"
                       value={newAnchors}
                       onChange={(e) => setNewAnchors(e.target.value)}
                       placeholder="Define invariants Coherence must protect..."
@@ -151,6 +165,7 @@ const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, th
                 <button 
                   type="submit" 
                   disabled={!isFormValid}
+                  data-tour="mount-thread"
                   className="px-10 py-4 mono text-[10px] font-bold uppercase tracking-widest bg-[#2a2a24] dark:bg-[#d1d1c1] text-white dark:text-[#121210] hover:bg-black dark:hover:bg-white transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
                 >
                   Mount Thread
