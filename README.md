@@ -1,20 +1,55 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Coherence
 
-# Run and deploy your AI Studio app
+**Version control for your thinking.**
 
-This contains everything you need to run your app locally.
+Most decisions don't happen in a moment — they evolve over weeks, conversations, and changing circumstances. Coherence lets you track *how* your reasoning changes over time, so you can catch drift before it costs you.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1uyWsDAUh_VvO-DLrk1d_QSSC6d_4aYSs
+## What it does
 
-## Run Locally
+- **Commit your reasoning** — log snapshots of your thinking on any decision or question
+- **Set anchors** — define the principles you don't want to compromise
+- **Detect drift** — AI flags when your recent commits contradict your anchors or earlier reasoning
+- **Review your thread** — see your full reasoning history in one place
 
-**Prerequisites:**  Node.js
+## Tech stack
 
+- React + TypeScript
+- Supabase (auth + database)
+- Gemini 2.5 Flash
+- Vite
+- Vercel
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Try it
+
+🔗 [mycoherence.vercel.app](https://mycoherence.vercel.app)
+
+## Run locally
+
+### Prerequisites
+- Node.js
+- A Supabase project
+- A Gemini API key (get one at [aistudio.google.com](https://aistudio.google.com/apikey))
+
+### Setup
+
+1. Clone the repo
+```bash
+   git clone https://github.com/harmeensafoora/Coherence.git
+   cd Coherence
+```
+
+2. Install dependencies
+```bash
+   npm install
+```
+
+3. Create a `.env.local` file based on `.env.example` and fill in your keys
+
+4. Run the app
+```bash
+   npm run dev
+```
+
+## Built by
+
+[Harmeen Safoora](https://github.com/harmeensafoora)
