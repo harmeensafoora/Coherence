@@ -1,38 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { supabase } from '../services/supabaseClient';
-
-/* ─── Rotating ticker ─── */
-const USE_CASES = [
-  "The scope that keeps expanding beyond the brief.",
-  "The exam you're preparing for — or avoiding.",
-  "The startup idea you're scared to bet on.",
-  "The country you keep putting on hold.",
-  "The client who doesn't know you've gone rogue.",
-  "The gap year that's slipping away.",
-];
-
-const UseCaseTicker: React.FC = () => {
-  const [index, setIndex] = useState(0);
-  const [visible, setVisible] = useState(true);
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      setVisible(false);
-      setTimeout(() => { setIndex(i => (i + 1) % USE_CASES.length); setVisible(true); }, 380);
-    }, 3000);
-    return () => clearInterval(id);
-  }, []);
-
-  return (
-    <p style={{
-      fontSize: 12, fontFamily: 'monospace', color: '#908e7e', marginTop: 8,
-      fontStyle: 'italic', transition: 'opacity 0.38s ease',
-      opacity: visible ? 1 : 0, minHeight: 20,
-    }}>
-      {USE_CASES[index]}
-    </p>
-  );
-};
 
 /* ─── Paper slip ─── */
 interface PaperProps {
@@ -68,7 +35,6 @@ interface ThreadCardProps {
   folderColor: string;
   tabColor: string;
   borderColor: string;
-  dotColor: string;
   status: 'STABLE' | 'DRIFTED';
   threadName: string;
   commitCount: number;
@@ -84,25 +50,26 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
   const statusDot   = status === 'DRIFTED' ? '#f59e0b' : '#4caf50';
 
   return (
-    <div style={{ position: 'relative', paddingTop: 54 }}>
+    <div style={{ position: 'relative', paddingTop: 60 }}>
       {children}
       <div style={{ position: 'relative', zIndex: 10 }}>
-        {/* Tab */}
+        {/* Tab — taller and more prominent */}
         <div style={{
-          position: 'absolute', top: -22, left: 0,
-          width: 68, height: 24,
+          position: 'absolute', top: -30, left: 0,
+          width: 90, height: 32,
           background: tabColor,
-          borderRadius: '6px 6px 0 0',
-          border: `0.5px solid ${borderColor}`,
+          borderRadius: '8px 8px 0 0',
+          border: `1px solid ${borderColor}`,
           borderBottom: 'none',
         }} />
         {/* Body */}
         <div style={{
           background: folderColor,
-          borderRadius: '0 8px 8px 8px',
-          padding: '14px 14px 16px',
-          border: `0.5px solid ${borderColor}`,
-          display: 'flex', flexDirection: 'column', gap: 8,
+          borderRadius: '0 10px 10px 10px',
+          padding: '16px 16px 18px',
+          border: `1px solid ${borderColor}`,
+          display: 'flex', flexDirection: 'column', gap: 9,
+          minHeight: 190,
         }}>
           {/* Thread name + status */}
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
@@ -140,7 +107,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
           <p style={{
             fontSize: 8, fontFamily: 'monospace', color: '#b0ae9e',
             textTransform: 'uppercase', letterSpacing: '0.15em',
-            margin: 0, borderTop: `0.5px solid ${borderColor}`, paddingTop: 8,
+            margin: 0, borderTop: `0.5px solid ${borderColor}`, paddingTop: 9,
           }}>
             {commitCount} commits in thread
           </p>
@@ -190,24 +157,20 @@ const LoginScreen: React.FC = () => {
       >
         {/* Brand */}
         <div>
-          <p style={{ fontSize: 8, fontFamily: 'monospace', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.35em', color: '#b0ae9e', marginBottom: 14 }}>
-            Observer Protocol 3.0
-          </p>
           <h1 style={{ fontSize: 48, fontWeight: 700, fontFamily: 'monospace', letterSpacing: '0.08em', color: '#1a1a18', textTransform: 'uppercase', lineHeight: 1, margin: 0 }}>
             Coherence
           </h1>
           <p style={{ fontSize: 13, fontFamily: 'monospace', fontWeight: 600, color: '#4a4840', marginTop: 10, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
             Version control for your thinking
           </p>
-          <UseCaseTicker />
         </div>
 
         {/* 2×2 thread grid */}
-        <div className="my-10 grid grid-cols-1 sm:grid-cols-2 gap-7">
+        <div className="my-10 grid grid-cols-2 gap-6" style={{ maxWidth: 540 }}>
 
-          {/* 1 — CLIENT SCOPE (software engineer) */}
+          {/* 1 — CLIENT SCOPE */}
           <ThreadCard
-            folderColor="#bde4ec" tabColor="#6dbdce" borderColor="#5aaec0" dotColor="#b45309"
+            folderColor="#bde4ec" tabColor="#5aaec0" borderColor="#4a9eb0"
             status="DRIFTED"
             threadName="Client_Scope_Q2"
             commitCount={7}
@@ -223,9 +186,9 @@ const LoginScreen: React.FC = () => {
             </Paper>
           </ThreadCard>
 
-          {/* 2 — GAP YEAR / NEET */}
+          {/* 2 — NEET GAP YEAR */}
           <ThreadCard
-            folderColor="#fde9a2" tabColor="#f5c832" borderColor="#e8b820" dotColor="#b45309"
+            folderColor="#fde9a2" tabColor="#e8b820" borderColor="#d4a810"
             status="DRIFTED"
             threadName="NEET_2026"
             commitCount={14}
@@ -248,9 +211,9 @@ const LoginScreen: React.FC = () => {
             </Paper>
           </ThreadCard>
 
-          {/* 3 — GO FREELANCE / BUILD STARTUP */}
+          {/* 3 — GO FREELANCE */}
           <ThreadCard
-            folderColor="#cee8d2" tabColor="#96c99e" borderColor="#89ba92" dotColor="#2e7d32"
+            folderColor="#cee8d2" tabColor="#7ab882" borderColor="#6aaa72"
             status="STABLE"
             threadName="Go_Freelance"
             commitCount={9}
@@ -258,7 +221,7 @@ const LoginScreen: React.FC = () => {
           >
             <Paper rotate={-3} bg="#f0faf2" index={0}>
               <p style={label}>Anchors</p>
-              <div style={{ borderLeft: '2px solid #96c99e', paddingLeft: 9, display: 'flex', flexDirection: 'column', gap: 5 }}>
+              <div style={{ borderLeft: '2px solid #7ab882', paddingLeft: 9, display: 'flex', flexDirection: 'column', gap: 5 }}>
                 <p style={pt()}>No full-time offers, even good ones</p>
                 <p style={pt()}>Validate before building</p>
                 <p style={pt()}>First client by month 2</p>
@@ -266,9 +229,9 @@ const LoginScreen: React.FC = () => {
             </Paper>
           </ThreadCard>
 
-          {/* 4 — MOVE OUT / CHANGE COUNTRIES */}
+          {/* 4 — LEAVE THE COUNTRY */}
           <ThreadCard
-            folderColor="#e2ccf0" tabColor="#b87fd0" borderColor="#a46dc0" dotColor="#6a1b9a"
+            folderColor="#e2ccf0" tabColor="#a46dc0" borderColor="#9460b0"
             status="STABLE"
             threadName="Leave_The_Country"
             commitCount={8}
@@ -286,10 +249,6 @@ const LoginScreen: React.FC = () => {
           </ThreadCard>
 
         </div>
-
-        <p style={{ fontSize: 8, fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.3em', color: '#c0beb0' }}>
-          Coherence — Reasoning System
-        </p>
       </div>
 
       {/* ── RIGHT ── */}
@@ -345,10 +304,6 @@ const LoginScreen: React.FC = () => {
               </>
             )}
           </button>
-
-          <p style={{ fontSize: 8, fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.3em', color: '#d0cec8', margin: 0 }}>
-            Auth Required // v3.0
-          </p>
         </div>
       </div>
     </div>
