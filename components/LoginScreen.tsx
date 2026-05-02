@@ -1,40 +1,41 @@
 import React, { useState } from 'react';
 import { supabase } from '../services/supabaseClient';
 
-/* ─── Paper slip ─── */
+/* ─── Small paper slip — fixed size, not full-width ─── */
 interface PaperProps {
+  x: number;
+  y: number;
   rotate: number;
   rotateHover: number;
   dxHover?: number;
   dyHover?: number;
   bg?: string;
-  index?: number;
   hovered?: boolean;
   children: React.ReactNode;
 }
 
 const Paper: React.FC<PaperProps> = ({
-  rotate, rotateHover, dxHover = 0, dyHover = -14,
-  bg = '#fff', index = 0, hovered = false, children,
+  x, y, rotate, rotateHover, dxHover = 0, dyHover = -10,
+  bg = '#fff', hovered = false, children,
 }) => (
   <div style={{
     position: 'absolute',
-    top: 2 + index * 9,
-    left: 14 + index * 16,
-    right: 10 - index * 5,
-    height: 90,
+    top: y,
+    left: x,
+    width: 148,
+    height: 78,
     background: bg,
-    borderRadius: 4,
-    padding: '10px 12px',
-    boxShadow: hovered ? '0 10px 24px rgba(0,0,0,0.18)' : '0 3px 12px rgba(0,0,0,0.11)',
+    borderRadius: 3,
+    padding: '8px 10px',
+    boxShadow: hovered ? '0 8px 20px rgba(0,0,0,0.16)' : '0 2px 8px rgba(0,0,0,0.10)',
     transform: hovered
-      ? `rotate(${rotateHover}deg) translate(${dxHover}px, ${dyHover}px)`
+      ? `rotate(${rotateHover}deg) translate(${dxHover}px,${dyHover}px)`
       : `rotate(${rotate}deg)`,
     transformOrigin: 'bottom center',
-    transition: 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s ease',
-    zIndex: 1 + index,
+    transition: 'transform 0.35s cubic-bezier(0.34,1.4,0.64,1), box-shadow 0.25s ease',
     overflow: 'hidden',
     border: '0.5px solid rgba(0,0,0,0.08)',
+    zIndex: 3,
   }}>
     {children}
   </div>
@@ -68,7 +69,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
 
   return (
     <div
-      style={{ position: 'relative', paddingTop: 64, cursor: 'pointer' }}
+      style={{ position: 'relative', paddingTop: 72, cursor: 'pointer' }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -77,62 +78,55 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
       <div style={{ position: 'relative', zIndex: 10 }}>
         {/* Tab */}
         <div style={{
-          position: 'absolute', top: -32, left: 0,
-          width: 88, height: 34,
+          position: 'absolute', top: -30, left: 0,
+          width: 82, height: 32,
           background: tabColor,
-          borderRadius: '8px 8px 0 0',
+          borderRadius: '7px 7px 0 0',
           border: `1px solid ${borderColor}`,
           borderBottom: 'none',
-          transition: 'background 0.2s',
         }} />
         {/* Body */}
         <div style={{
           background: folderColor,
-          borderRadius: '0 10px 10px 10px',
-          padding: '14px 14px 16px',
+          borderRadius: '0 8px 8px 8px',
+          padding: '14px 14px 15px',
           border: `1px solid ${borderColor}`,
-          display: 'flex', flexDirection: 'column', gap: 9,
+          display: 'flex', flexDirection: 'column', gap: 8,
           transition: 'transform 0.2s ease, box-shadow 0.2s ease',
           transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
-          boxShadow: hovered ? '0 8px 20px rgba(0,0,0,0.12)' : '0 2px 6px rgba(0,0,0,0.06)',
+          boxShadow: hovered ? '0 8px 18px rgba(0,0,0,0.10)' : '0 1px 4px rgba(0,0,0,0.05)',
         }}>
-          {/* Thread name + status */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 6 }}>
             <p style={{
-              fontSize: 11, fontFamily: 'monospace', fontWeight: 700,
+              fontSize: 10.5, fontFamily: 'monospace', fontWeight: 700,
               textTransform: 'uppercase', letterSpacing: '0.04em',
               color: '#1a1a18', margin: 0, lineHeight: 1.3,
             }}>
               {threadName}
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-              <span style={{
-                fontSize: 7, fontFamily: 'monospace', fontWeight: 700,
-                textTransform: 'uppercase', letterSpacing: '0.15em', color: statusColor,
-              }}>
+              <span style={{ fontSize: 7, fontFamily: 'monospace', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: statusColor }}>
                 {status}
               </span>
               <div style={{ width: 5, height: 5, borderRadius: '50%', background: statusDot }} />
             </div>
           </div>
 
-          {/* Latest commit */}
           <p style={{
-            fontSize: 10, fontFamily: 'monospace', color: '#6a6860',
-            lineHeight: 1.55, margin: 0, fontStyle: 'italic',
+            fontSize: 9.5, fontFamily: 'monospace', color: '#6a6860',
+            lineHeight: 1.5, margin: 0, fontStyle: 'italic',
             display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const,
             overflow: 'hidden',
           }}>
             "{lastCommit}"
           </p>
 
-          {/* Footer */}
           <p style={{
-            fontSize: 8, fontFamily: 'monospace', color: '#b0ae9e',
+            fontSize: 7.5, fontFamily: 'monospace', color: '#b0ae9e',
             textTransform: 'uppercase', letterSpacing: '0.15em',
-            margin: 0, borderTop: `0.5px solid ${borderColor}`, paddingTop: 9,
+            margin: 0, borderTop: `0.5px solid ${borderColor}`, paddingTop: 8,
           }}>
-            {commitCount} commits in thread
+            {commitCount} commits
           </p>
         </div>
       </div>
@@ -141,13 +135,13 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
 };
 
 /* ─── Shared paper text styles ─── */
-const pt = (size = 8.5): React.CSSProperties => ({
-  fontSize: size, fontFamily: 'monospace', color: '#3a3a34', lineHeight: 1.55, margin: 0,
+const pt = (size = 8): React.CSSProperties => ({
+  fontSize: size, fontFamily: 'monospace', color: '#3a3a34', lineHeight: 1.5, margin: 0,
 });
-const muted: React.CSSProperties = { fontSize: 7.5, fontFamily: 'monospace', color: '#b0ae9e' };
-const label: React.CSSProperties = {
-  fontSize: 7, fontFamily: 'monospace', fontWeight: 700,
-  textTransform: 'uppercase', letterSpacing: '0.2em', color: '#b0ae9e', marginBottom: 6,
+const muted: React.CSSProperties = { fontSize: 7, fontFamily: 'monospace', color: '#b0ae9e' };
+const plabel: React.CSSProperties = {
+  fontSize: 6.5, fontFamily: 'monospace', fontWeight: 700,
+  textTransform: 'uppercase', letterSpacing: '0.2em', color: '#b0ae9e', marginBottom: 5,
 };
 
 /* ─── Login screen ─── */
@@ -169,7 +163,7 @@ const LoginScreen: React.FC = () => {
 
       {/* ── LEFT ── */}
       <div
-        className="flex-1 flex flex-col p-10 lg:p-14 gap-12"
+        className="flex-1 flex flex-col justify-center p-10 lg:p-16 gap-14"
         style={{
           background: '#f0ede8',
           backgroundImage:
@@ -180,16 +174,16 @@ const LoginScreen: React.FC = () => {
       >
         {/* Brand */}
         <div>
-          <h1 style={{ fontSize: 48, fontWeight: 700, fontFamily: 'monospace', letterSpacing: '0.08em', color: '#1a1a18', textTransform: 'uppercase', lineHeight: 1, margin: 0 }}>
+          <h1 style={{ fontSize: 44, fontWeight: 700, fontFamily: 'monospace', letterSpacing: '0.08em', color: '#1a1a18', textTransform: 'uppercase', lineHeight: 1, margin: 0 }}>
             Coherence
           </h1>
-          <p style={{ fontSize: 13, fontFamily: 'monospace', fontWeight: 600, color: '#4a4840', marginTop: 10, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+          <p style={{ fontSize: 12, fontFamily: 'monospace', fontWeight: 600, color: '#4a4840', marginTop: 8, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
             Version control for your thinking
           </p>
         </div>
 
-        {/* 2×2 thread grid — full width, no constraint */}
-        <div className="grid grid-cols-2 gap-7 w-full">
+        {/* 2×2 thread grid — capped so cards stay folder-proportioned */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 28, maxWidth: 580 }}>
 
           {/* 1 — CLIENT SCOPE */}
           <ThreadCard
@@ -197,20 +191,15 @@ const LoginScreen: React.FC = () => {
             status="DRIFTED" threadName="Client_Scope_Q2" commitCount={7}
             lastCommit="Rebuilt the dashboard. It's cleaner. They didn't ask for it."
           >
-            <Paper rotate={-6} rotateHover={-18} dyHover={-18} bg="#f0fbfd" index={0}>
-              <div style={{ borderLeft: '2px solid #f59e0b', paddingLeft: 10 }}>
-                <p style={{ ...label, color: '#b45309' }}>Observer Note</p>
-                <p style={{ ...pt(8.5), color: '#92400e', fontStyle: 'italic' }}>
-                  "'Just a quick addition' in 4 of 7 commits. Anchor violated."
-                </p>
-              </div>
+            <Paper x={18} y={8} rotate={-6} rotateHover={-18} dyHover={-14} bg="#f0fbfd">
+              <p style={plabel}>Observer Note</p>
+              <p style={{ ...pt(), color: '#92400e', fontStyle: 'italic' }}>
+                "'Just a quick addition' — 4 of 7 commits. Anchor violated.
+              </p>
             </Paper>
-            <Paper rotate={4} rotateHover={14} dxHover={6} dyHover={-10} bg="#fff" index={1}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span style={muted}>04/05 · 10:22</span>
-                <span style={{ ...muted, color: '#f59e0b', fontWeight: 700 }}>DRIFTED</span>
-              </div>
-              <p style={pt()}>Anchor: no out-of-scope work without written client approval.</p>
+            <Paper x={52} y={14} rotate={5} rotateHover={16} dxHover={8} dyHover={-8} bg="#fff">
+              <span style={muted}>04/05 · 10:22 · DRIFTED</span>
+              <p style={{ ...pt(), marginTop: 4 }}>No out-of-scope work without written approval.</p>
             </Paper>
           </ThreadCard>
 
@@ -220,27 +209,22 @@ const LoginScreen: React.FC = () => {
             status="DRIFTED" threadName="NEET_2026" commitCount={14}
             lastCommit="Physics done. Skipped chem. YouTube was open the whole time."
           >
-            <Paper rotate={-4} rotateHover={-16} dyHover={-18} bg="#fffef0" index={0}>
-              <p style={label}>Commit Index</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {[
-                  { text: '6h study — actually did it', dot: '#4caf50' },
-                  { text: "Skipped. 'Will catch up'",   dot: '#f59e0b' },
-                  { text: 'Skipped again',               dot: '#ef4444' },
-                ].map((row, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: row.dot, flexShrink: 0 }} />
-                    <span style={{ ...pt(8), color: '#4a4840' }}>{row.text}</span>
-                  </div>
-                ))}
-              </div>
+            <Paper x={16} y={8} rotate={-5} rotateHover={-17} dyHover={-14} bg="#fffef0">
+              <p style={plabel}>Commit Index</p>
+              {[
+                { text: '6h — actually did it', dot: '#4caf50' },
+                { text: "Skipped. 'Catch up'",  dot: '#f59e0b' },
+                { text: 'Skipped again',          dot: '#ef4444' },
+              ].map((r, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3 }}>
+                  <div style={{ width: 4, height: 4, borderRadius: '50%', background: r.dot, flexShrink: 0 }} />
+                  <span style={pt(7.5)}>{r.text}</span>
+                </div>
+              ))}
             </Paper>
-            <Paper rotate={5} rotateHover={16} dxHover={4} dyHover={-10} bg="#fff" index={1}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span style={muted}>01/05 · 08:00</span>
-                <span style={{ ...muted, color: '#ef4444', fontWeight: 700 }}>DRIFTED</span>
-              </div>
-              <p style={pt()}>Anchor: 6h minimum daily. No phones until 6 PM.</p>
+            <Paper x={50} y={15} rotate={5} rotateHover={15} dxHover={6} dyHover={-8} bg="#fff">
+              <span style={muted}>01/05 · 08:00 · DRIFTED</span>
+              <p style={{ ...pt(), marginTop: 4 }}>Anchor: 6h minimum. No phones until 6 PM.</p>
             </Paper>
           </ThreadCard>
 
@@ -250,20 +234,17 @@ const LoginScreen: React.FC = () => {
             status="STABLE" threadName="Go_Freelance" commitCount={9}
             lastCommit="Declined the Google offer. Runway: 4 months. Terrifying. Staying."
           >
-            <Paper rotate={-5} rotateHover={-17} dyHover={-18} bg="#f0faf2" index={0}>
-              <p style={label}>Anchors</p>
-              <div style={{ borderLeft: '2px solid #7ab882', paddingLeft: 8, display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <p style={pt()}>No full-time offers, even good ones</p>
-                <p style={pt()}>Validate before building</p>
-                <p style={pt()}>First client by month 2</p>
+            <Paper x={16} y={8} rotate={-5} rotateHover={-16} dyHover={-14} bg="#f0faf2">
+              <p style={plabel}>Anchors</p>
+              <div style={{ borderLeft: '2px solid #7ab882', paddingLeft: 6 }}>
+                <p style={{ ...pt(7.5), marginBottom: 3 }}>No full-time offers</p>
+                <p style={{ ...pt(7.5), marginBottom: 3 }}>Validate before building</p>
+                <p style={pt(7.5)}>First client by month 2</p>
               </div>
             </Paper>
-            <Paper rotate={4} rotateHover={13} dxHover={5} dyHover={-10} bg="#fff" index={1}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span style={muted}>30/04 · 21:14</span>
-                <span style={{ ...muted, color: '#4caf50', fontWeight: 700 }}>STABLE</span>
-              </div>
-              <p style={pt()}>Offer declined. Anchor held. Runway still above minimum threshold.</p>
+            <Paper x={50} y={15} rotate={4} rotateHover={13} dxHover={6} dyHover={-8} bg="#fff">
+              <span style={muted}>30/04 · 21:14 · STABLE</span>
+              <p style={{ ...pt(), marginTop: 4 }}>Offer declined. Anchor held. Runway above threshold.</p>
             </Paper>
           </ThreadCard>
 
@@ -273,20 +254,17 @@ const LoginScreen: React.FC = () => {
             status="STABLE" threadName="Leave_The_Country" commitCount={8}
             lastCommit="Found a flat in Berlin. Didn't tell anyone yet. Timeline holding."
           >
-            <Paper rotate={-4} rotateHover={-15} dyHover={-18} bg="#faf5ff" index={0}>
-              <p style={label}>Anchors</p>
-              <div style={{ borderLeft: '2px solid #a46dc0', paddingLeft: 8, display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <p style={pt()}>Relocate by December</p>
-                <p style={pt()}>Don't let guilt change the timeline</p>
-                <p style={pt()}>Role lined up before moving</p>
+            <Paper x={16} y={8} rotate={-4} rotateHover={-15} dyHover={-14} bg="#faf5ff">
+              <p style={plabel}>Anchors</p>
+              <div style={{ borderLeft: '2px solid #a46dc0', paddingLeft: 6 }}>
+                <p style={{ ...pt(7.5), marginBottom: 3 }}>Relocate by December</p>
+                <p style={{ ...pt(7.5), marginBottom: 3 }}>Don't let guilt shift the date</p>
+                <p style={pt(7.5)}>Role lined up before moving</p>
               </div>
             </Paper>
-            <Paper rotate={5} rotateHover={15} dxHover={5} dyHover={-10} bg="#fff" index={1}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span style={muted}>01/04 · 22:11</span>
-                <span style={{ ...muted, color: '#4caf50', fontWeight: 700 }}>STABLE</span>
-              </div>
-              <p style={pt()}>Berlin flat found. Timeline consistent. Anchor intact.</p>
+            <Paper x={50} y={15} rotate={5} rotateHover={15} dxHover={6} dyHover={-8} bg="#fff">
+              <span style={muted}>01/04 · 22:11 · STABLE</span>
+              <p style={{ ...pt(), marginTop: 4 }}>Berlin flat found. Timeline consistent. Anchor intact.</p>
             </Paper>
           </ThreadCard>
 
@@ -295,18 +273,18 @@ const LoginScreen: React.FC = () => {
 
       {/* ── RIGHT ── */}
       <div
-        className="w-full lg:w-[380px] shrink-0 flex flex-col justify-center p-10 lg:p-14"
+        className="w-full lg:w-[360px] shrink-0 flex flex-col justify-center p-10 lg:p-14"
         style={{ background: '#faf9f6', borderLeft: '1px solid rgba(0,0,0,0.06)' }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <p style={{ fontSize: 8, fontFamily: 'monospace', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.35em', color: '#c0beb0', margin: 0 }}>
               Your threads are waiting
             </p>
-            <h2 style={{ fontSize: 26, fontWeight: 700, fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.03em', color: '#1a1a18', lineHeight: 1.25, margin: 0 }}>
+            <h2 style={{ fontSize: 24, fontWeight: 700, fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.03em', color: '#1a1a18', lineHeight: 1.25, margin: 0 }}>
               Sign in to access your archive.
             </h2>
-            <p style={{ fontSize: 12, fontFamily: 'monospace', color: '#908e7e', lineHeight: 1.7, margin: 0 }}>
+            <p style={{ fontSize: 11.5, fontFamily: 'monospace', color: '#908e7e', lineHeight: 1.7, margin: 0 }}>
               Your reasoning history is private. Only you can read it.
             </p>
           </div>
@@ -321,7 +299,7 @@ const LoginScreen: React.FC = () => {
             onClick={handleGoogleSignIn}
             disabled={loading}
             style={{
-              width: '100%', padding: '18px 0',
+              width: '100%', padding: '16px 0',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
               background: '#1a1a18', color: '#fff',
               fontFamily: 'monospace', fontSize: 11, fontWeight: 700,
