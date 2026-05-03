@@ -546,6 +546,79 @@ const MarqueeRow = ({ reverse = false }: { reverse?: boolean }) => {
   );
 };
 
+// Static decorative backdrop for mobile — no animation, no 3D, zero GPU pressure
+const mobileCards = [
+  { useCase: useCases[0],  top: '-4%',  left: '-8%',  rotate: '-6deg'  },
+  { useCase: useCases[3],  top: '-2%',  right: '-6%', rotate:  '7deg'  },
+  { useCase: useCases[6],  top: '28%',  left: '-12%', rotate: '-3deg'  },
+  { useCase: useCases[9],  top: '30%',  right: '-10%',rotate:  '5deg'  },
+  { useCase: useCases[1],  bottom: '-4%',left: '-6%', rotate:  '4deg'  },
+  { useCase: useCases[7],  bottom: '-2%',right: '-8%',rotate: '-8deg'  },
+];
+
+const MobileBackground = () => (
+  <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', zIndex: 1 }}>
+    {mobileCards.map(({ useCase, rotate, ...pos }, i) => (
+      <div key={i} style={{
+        position: 'absolute',
+        width: 220,
+        ...pos,
+        transform: `rotate(${rotate})`,
+        opacity: 0.55,
+      }}>
+        {/* Tab */}
+        <div style={{
+          width: 80,
+          height: 26,
+          background: useCase.tabColor,
+          borderRadius: '6px 6px 0 0',
+          border: `1px solid ${useCase.borderColor}`,
+          borderBottom: 'none',
+          marginLeft: 12,
+        }} />
+        {/* Body */}
+        <div style={{
+          background: useCase.folderColor,
+          borderRadius: '0 8px 8px 8px',
+          border: `1px solid ${useCase.borderColor}`,
+          padding: '14px 16px',
+        }}>
+          <p style={{
+            fontSize: 9,
+            fontFamily: 'monospace',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em',
+            color: '#1a1a18',
+            margin: '0 0 8px',
+          }}>
+            {useCase.title}
+          </p>
+          <p style={{
+            fontSize: 8,
+            fontFamily: 'monospace',
+            color: '#5a5850',
+            lineHeight: 1.5,
+            margin: 0,
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          } as React.CSSProperties}>
+            {useCase.summary}
+          </p>
+        </div>
+      </div>
+    ))}
+    {/* Overlay to fade cards into background */}
+    <div style={{
+      position: 'absolute',
+      inset: 0,
+      background: 'radial-gradient(ellipse at center, rgba(250,249,246,0.82) 0%, rgba(250,249,246,0.6) 40%, rgba(240,237,232,0.2) 100%)',
+    }} />
+  </div>
+);
+
 const LoginScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -573,7 +646,9 @@ const LoginScreen: React.FC = () => {
     <div className="signin-marquee-page">
       <style>{marqueeStyles}</style>
 
-      {!isMobile && (
+      {isMobile ? (
+        <MobileBackground />
+      ) : (
         <div className="signin-marquee-field">
           <MarqueeRow />
           <MarqueeRow reverse />
