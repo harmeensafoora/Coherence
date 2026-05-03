@@ -69,12 +69,12 @@ const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, th
       <div className="w-full max-w-5xl">
 
         {/* Wordmark */}
-        <div className="text-center mb-12 md:mb-16">
+        <div className="text-center mb-10 md:mb-12">
           <h1 className="text-[48px] md:text-[72px] font-bold tracking-[0.12em] text-[#2a2a24] dark:text-[#d1d1c1] uppercase leading-none glow-text mono">Coherence</h1>
         </div>
 
         {/* Header — greeting left, actions right */}
-        <header className="mb-12 md:mb-20 pb-8 md:pb-10 border-b border-[#c0beb0]/30 dark:border-white/10">
+        <header className="mb-6 md:mb-10 pb-6 md:pb-8 border-b border-[#c0beb0]/30 dark:border-white/10">
           <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-6">
 
             {/* Greeting */}
@@ -87,59 +87,55 @@ const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, th
               </p>
             </div>
 
-            {/* Right side: stats + actions */}
-            <div className="flex flex-wrap items-center gap-4">
-              {/* Inline stats */}
-              <div className="flex items-center gap-5 mono">
-                <div className="flex flex-col items-center">
-                  <span className="text-[7px] uppercase tracking-[0.2em] text-[#b0ae9e] dark:text-[#7a786a] font-bold mb-1">Threads</span>
-                  <span className="text-[20px] font-bold text-[#2a2a24] dark:text-[#d1d1c1] leading-none">{folders.length.toString().padStart(2, '0')}</span>
+            {/* Right side: stat boxes + Create Thread */}
+            <div className="flex flex-col md:flex-row items-stretch gap-3 w-full lg:w-auto">
+              <div className="flex gap-3">
+                <button
+                  onClick={onToggleTheme}
+                  className="md:w-28 p-4 bg-white/30 dark:bg-white/5 border border-[#c0beb0]/20 dark:border-white/10 flex flex-col justify-between group hover:border-[#2a2a24] dark:hover:border-[#d1d1c1] transition-all"
+                >
+                  <span className="text-[8px] mono uppercase text-[#b0ae9e] dark:text-[#7a786a] tracking-widest font-bold">Theme</span>
+                  <span className="text-[11px] mono font-bold text-[#2a2a24] dark:text-[#d1d1c1] uppercase">{theme}</span>
+                </button>
+                <div className="flex-1 md:w-28 p-4 bg-white/30 dark:bg-white/5 border border-[#c0beb0]/20 dark:border-white/10 flex flex-col justify-between">
+                  <span className="text-[8px] mono uppercase text-[#b0ae9e] dark:text-[#7a786a] tracking-widest font-bold">Threads</span>
+                  <span className="text-[18px] mono font-bold text-[#2a2a24] dark:text-[#d1d1c1]">{folders.length.toString().padStart(2, '0')}</span>
                 </div>
-                <div className="w-px h-8 bg-[#c0beb0]/30 dark:bg-white/10" />
-                <div className="flex flex-col items-center">
-                  <span className="text-[7px] uppercase tracking-[0.2em] text-[#b0ae9e] dark:text-[#7a786a] font-bold mb-1">Drifted</span>
-                  <span className={`text-[20px] font-bold leading-none ${driftCount > 0 ? 'text-[#fbbf24]' : 'text-[#b0ae9e] dark:text-[#33322e]'}`}>
+                <div className={`flex-1 md:w-28 p-4 bg-white/30 dark:bg-white/5 border border-[#c0beb0]/20 dark:border-white/10 flex flex-col justify-between ${driftCount > 0 ? 'bg-amber-50/20 dark:bg-amber-900/10' : ''}`}>
+                  <span className="text-[8px] mono uppercase text-[#b0ae9e] dark:text-[#7a786a] tracking-widest font-bold">Drifted</span>
+                  <span className={`text-[18px] mono font-bold ${driftCount > 0 ? 'text-[#fbbf24]' : 'text-[#b0ae9e] dark:text-[#33322e]'}`}>
                     {driftCount.toString().padStart(2, '0')}
                   </span>
                 </div>
-                <div className="w-px h-8 bg-[#c0beb0]/30 dark:bg-white/10" />
-                <button
-                  onClick={onToggleTheme}
-                  className="flex flex-col items-center group"
-                >
-                  <span className="text-[7px] uppercase tracking-[0.2em] text-[#b0ae9e] dark:text-[#7a786a] font-bold mb-1">Theme</span>
-                  <span className="text-[11px] font-bold uppercase tracking-widest text-[#908e7e] dark:text-[#7a786a] group-hover:text-[#2a2a24] dark:group-hover:text-[#d1d1c1] transition-colors">{theme}</span>
-                </button>
               </div>
-
-              {/* Create Thread */}
               {!isCreating && (
                 <button
                   onClick={() => setIsCreating(true)}
                   data-tour="create-thread"
-                  className="px-7 py-3.5 mono text-[10px] font-bold uppercase tracking-[0.2em] bg-[#2a2a24] dark:bg-[#d1d1c1] text-white dark:text-[#121210] hover:bg-black dark:hover:bg-white transition-all"
+                  className="px-6 py-4 mono text-[10px] font-bold uppercase tracking-[0.2em] bg-[#2a2a24] dark:bg-[#d1d1c1] text-white dark:text-[#121210] hover:bg-black dark:hover:bg-white transition-all flex items-center justify-center"
                 >
                   + Create Thread
                 </button>
               )}
-
-              {/* Sign out — tucked right */}
-              <div className="flex items-center gap-3 pl-1">
-                {userEmail && (
-                  <span className="text-[8px] mono text-[#c0beb0] dark:text-[#7a786a] tracking-widest truncate max-w-[140px] hidden sm:block">
-                    {userEmail}
-                  </span>
-                )}
-                <button
-                  onClick={onSignOut}
-                  className="text-[8px] mono font-bold uppercase tracking-widest text-[#908e7e] dark:text-[#7a786a] hover:text-[#2a2a24] dark:hover:text-[#d1d1c1] transition-colors border border-[#c0beb0]/30 dark:border-white/10 px-3 py-1.5"
-                >
-                  Sign Out
-                </button>
-              </div>
             </div>
 
           </div>
+
+          {/* Email + sign out — below the main row */}
+          <div className="flex items-center justify-end gap-4 mt-4">
+            {userEmail && (
+              <span className="text-[9px] mono text-[#5a5848] dark:text-[#9a9888] tracking-widest truncate max-w-[200px]">
+                {userEmail}
+              </span>
+            )}
+            <button
+              onClick={onSignOut}
+              className="text-[9px] mono font-bold uppercase tracking-widest text-[#4a4840] dark:text-[#9a9888] hover:text-[#2a2a24] dark:hover:text-[#d1d1c1] transition-colors border border-[#908e7e]/40 dark:border-white/20 px-3 py-1.5"
+            >
+              Sign Out
+            </button>
+          </div>
+
         </header>
 
         {isCreating && (
