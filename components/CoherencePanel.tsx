@@ -76,15 +76,15 @@ const SubDirectory: React.FC<{
           {items.map((item, i) => {
             const isViolated = isAnchor && violatedAnchors.includes(item);
             return (
-              <div 
-                key={i} 
-                className={`group/item text-[11px] leading-snug flex items-center py-0.5 rounded-sm transition-none ${
-                  isViolated 
-                    ? 'text-amber-800 dark:text-amber-500 font-medium' 
+              <div
+                key={i}
+                className={`group/item text-[13px] leading-snug flex items-start py-1 rounded-sm transition-none ${
+                  isViolated
+                    ? 'text-amber-800 dark:text-amber-500 font-medium'
                     : 'text-[#4a483a] dark:text-[#b0ae9e]'
                 }`}
               >
-                <span className="mr-3 opacity-30 mono text-[9px] mt-0.5">/</span>
+                <span className="mr-3 opacity-30 mono text-[10px] mt-0.5">/</span>
                 <span className="flex-1 tracking-tight">{item}</span>
                 {isAnchor && onDeleteAnchor && (
                   <button 
@@ -272,46 +272,52 @@ const CoherencePanel: React.FC<CoherencePanelProps> = ({
 
         {/* Timeline Section */}
         <div className="mt-16 mb-12">
-          <div className="flex items-center gap-2.5 mb-8">
-            <span className="text-sm opacity-60">📜</span>
+          <div className="flex items-center gap-2.5 mb-6">
             <span className="text-[10px] font-bold mono uppercase tracking-[0.25em] text-[#2a2a24] dark:text-[#d1d1c1]">Timeline</span>
+            <span className="text-[9px] mono text-[#c0beb0] dark:text-[#5a5850]">— {history.length} commit{history.length !== 1 ? 's' : ''}</span>
           </div>
-          
-          <div className="relative border-l border-[#c0beb0]/30 dark:border-white/10 ml-2 pl-5 space-y-8">
-            <button 
+
+          <div className="relative border-l-2 border-[#c0beb0]/20 dark:border-white/8 ml-2 pl-5 space-y-6">
+            {/* Live state node */}
+            <button
               onClick={() => setSelectionIds([])}
-              className={`text-left block w-full transition-opacity ${selectionIds.length === 0 ? 'opacity-100' : 'opacity-30'}`}
+              className={`text-left block w-full transition-all group ${selectionIds.length === 0 ? 'opacity-100' : 'opacity-30 hover:opacity-70'}`}
             >
-              <div className={`absolute -left-[0.35rem] w-2.5 h-2.5 rounded-full border border-white dark:border-black transition-all ${selectionIds.length === 0 ? 'bg-[#4ade80]' : 'bg-[#c0beb0] dark:bg-[#7a786a]'}`} />
-              <div className="text-[10px] font-bold text-[#2a2a24] dark:text-[#d1d1c1] mono uppercase tracking-widest">Live_State</div>
-              <div className="text-[8px] text-[#b0ae9e] dark:text-[#7a786a] mono mt-0.5 tracking-tight uppercase font-medium">Active</div>
+              <div className={`absolute -left-[0.4rem] w-3 h-3 rounded-full border-2 border-[#f4f2eb] dark:border-[#1a1a16] transition-all ${selectionIds.length === 0 ? 'bg-[#4ade80] shadow-[0_0_6px_rgba(74,222,128,0.5)]' : 'bg-[#c0beb0] dark:bg-[#7a786a]'}`} />
+              <div className="text-[11px] font-bold text-[#2a2a24] dark:text-[#d1d1c1] mono uppercase tracking-wider">Current state</div>
+              <div className="text-[10px] text-[#b0ae9e] dark:text-[#7a786a] mono mt-0.5">Live — {hasDrift ? 'Drifted' : 'Stable'}</div>
             </button>
 
             {history.slice().reverse().map((s) => {
               const isSelected = selectionIds.includes(s.id);
               const hasDriftAtSnapshot = s.state.driftDetected.length > 0;
+              const dateStr = new Date(s.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' });
+              const timeStr = new Date(s.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
               return (
                 <div key={s.id} className="group relative">
-                  <button 
+                  <button
                     onClick={() => toggleSnapshotSelection(s.id)}
-                    className={`text-left block w-full transition-opacity relative group ${isSelected ? 'opacity-100' : 'opacity-40 hover:opacity-100'}`}
+                    className={`text-left block w-full transition-all ${isSelected ? 'opacity-100' : 'opacity-50 hover:opacity-100'}`}
                   >
-                    <div className={`absolute -left-[1.35rem] w-2 h-2 rounded-full border border-white dark:border-black transition-all ${
-                      isSelected ? 'bg-[#2a2a24] dark:bg-[#d1d1c1]' : hasDriftAtSnapshot ? 'bg-amber-400' : 'bg-[#c0beb0]/80 dark:bg-[#7a786a]'
+                    <div className={`absolute -left-[0.35rem] w-2.5 h-2.5 rounded-full border-2 border-[#f4f2eb] dark:border-[#1a1a16] transition-all ${
+                      isSelected ? 'bg-[#2a2a24] dark:bg-[#d1d1c1] scale-110' : hasDriftAtSnapshot ? 'bg-amber-400' : 'bg-[#c0beb0] dark:bg-[#5a5850]'
                     }`} />
-                    <div className="text-[9px] text-[#908e7e] dark:text-[#7a786a] mono tracking-widest uppercase mb-1">
-                      Commit_{new Date(s.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12: false})}
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[10px] text-[#b0ae9e] dark:text-[#7a786a] mono">{dateStr} · {timeStr}</span>
+                      {hasDriftAtSnapshot && (
+                        <span className="text-[8px] mono font-bold text-amber-500 uppercase tracking-wider">Drift</span>
+                      )}
                     </div>
-                    <div className="text-[11px] text-[#2a2a24] dark:text-[#d1d1c1] truncate tracking-tight font-medium uppercase mono max-w-[85%]">
+                    <div className="text-[12px] text-[#2a2a24] dark:text-[#d1d1c1] leading-snug font-medium mono max-w-[90%]">
                       {s.changeSummary}
                     </div>
                   </button>
                   {onDeleteSnapshot && (
-                    <button 
+                    <button
                       onClick={() => onDeleteSnapshot(s.id)}
-                      className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-40 hover:!opacity-100 text-red-600 mono text-[8px] uppercase tracking-widest"
+                      className="absolute right-0 top-0 opacity-0 group-hover:opacity-40 hover:!opacity-100 text-red-500 mono text-[9px] uppercase tracking-widest transition-opacity"
                     >
-                      [purge]
+                      delete
                     </button>
                   )}
                 </div>

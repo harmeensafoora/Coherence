@@ -1,5 +1,6 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { analyzeThinking } from '../services/geminiService';
 import { Folder, ReasoningState, Snapshot, FileEntry } from '../types';
 import CoherencePanel from './CoherencePanel';
@@ -102,6 +103,7 @@ const FolderView: React.FC<FolderViewProps> = ({ folder, onBack, onUpdate, onDel
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
   const [showMobileNav, setShowMobileNav] = useState(false);
   const [showMobilePanel, setShowMobilePanel] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<{ type: 'snapshot' | 'anchor'; id: string; label: string } | null>(null);
 
   // Keep isAnalyzing derived from commitPhase for CoherencePanel compatibility
   const isAnalyzing = commitPhase === 'analyzing';
@@ -378,7 +380,8 @@ const FolderView: React.FC<FolderViewProps> = ({ folder, onBack, onUpdate, onDel
                   autoFocus
                   data-tour="commit-editor"
                   placeholder="Where is your thinking right now? What are you leaning towards, what's pulling you back, what feels unresolved..."
-                  className="w-full min-h-[50vh] text-[16px] leading-[1.8] text-[#3a3a34] dark:text-[#d1d1c1] bg-transparent resize-none border-none outline-none placeholder-[#c0beb0]/50 dark:placeholder-white/10 font-light"
+                  className="w-full min-h-[50vh] text-[16px] leading-[1.8] text-[#3a3a34] dark:text-[#d1d1c1] bg-transparent resize-none border-0 outline-none ring-0 focus:ring-0 focus:outline-none placeholder-[#c0beb0]/50 dark:placeholder-white/10 font-light"
+                  style={{ boxShadow: 'none', WebkitAppearance: 'none' }}
                   value={newUpdateText}
                   onChange={(e) => setNewUpdateText(e.target.value)}
                   onKeyDown={handleKeyDown}

@@ -71,7 +71,7 @@ const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, th
           <div className="flex flex-col">
             <h1 className="text-[36px] md:text-[48px] font-bold tracking-[0.1em] text-[#2a2a24] dark:text-[#d1d1c1] uppercase leading-none glow-text mono">Coherence</h1>
             <div className="mt-4 border-l-2 border-[#E8A23A]/40 pl-4">
-              <p className="text-[26px] md:text-[32px] font-bold tracking-[0.02em] text-[#2a2a24] dark:text-[#d1d1c1] mono leading-none">
+              <p className="text-[34px] md:text-[44px] font-bold tracking-[0.02em] text-[#2a2a24] dark:text-[#d1d1c1] mono leading-none">
                 Hey, <span style={{ color: '#E8A23A' }}>{userName || 'there'}</span>.
               </p>
               <p className="text-[13px] font-medium tracking-[0.04em] text-[#908e7e] dark:text-[#7a786a] mono mt-2 italic">
