@@ -133,6 +133,27 @@ const App: React.FC = () => {
     loadFolders();
   }, [user]);
 
+  // Browser back button → go back to threads, never log out
+  useEffect(() => {
+    window.history.replaceState({ view: 'home' }, '');
+
+    const handlePopState = (e: PopStateEvent) => {
+      // Always return to threads list; never touch auth
+      setActiveFolderId(null);
+      window.history.replaceState({ view: 'home' }, '');
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Push a history entry when entering a thread so back button works
+  useEffect(() => {
+    if (activeFolderId) {
+      window.history.pushState({ view: 'folder', folderId: activeFolderId }, '');
+    }
+  }, [activeFolderId]);
+
   // Theme persistence
   useEffect(() => {
     localStorage.setItem('coherence_theme', theme);

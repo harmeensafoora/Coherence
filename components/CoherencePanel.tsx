@@ -1,5 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
+import ReactDOM from 'react-dom';
 import { ReasoningState, Snapshot, DriftItem } from '../types';
 
 interface CoherencePanelProps {
@@ -43,11 +44,11 @@ const SubDirectory: React.FC<{
           </span>
         </div>
         {isAnchor && onAddClick && (
-          <button 
+          <button
             onClick={(e) => { e.stopPropagation(); onAddClick(); }}
-            className="text-[9px] font-bold text-[#2a2a24] dark:text-[#d1d1c1] opacity-20 hover:opacity-100 transition-opacity mono px-2"
+            className="text-[9px] font-bold text-[#2a2a24] dark:text-[#d1d1c1] opacity-60 hover:opacity-100 transition-opacity mono px-2 border border-[#c0beb0]/40 dark:border-white/10 hover:border-[#2a2a24]/40 dark:hover:border-white/30 py-0.5"
           >
-            [+]
+            + Add
           </button>
         )}
       </div>
@@ -119,6 +120,7 @@ const CoherencePanel: React.FC<CoherencePanelProps> = ({
   const [redZoneView, setRedZoneView] = useState<'closed' | 'menu' | 'anchors' | 'commits' | 'thread'>('closed');
   const [deleteTaskInput, setDeleteTaskInput] = useState('');
   const [confirmingItem, setConfirmingItem] = useState<string | null>(null);
+  const [deleteFinalConfirm, setDeleteFinalConfirm] = useState(false);
 
   const sortedSelectedSnapshots = useMemo(() => {
     return selectionIds
@@ -159,6 +161,10 @@ const CoherencePanel: React.FC<CoherencePanelProps> = ({
 
   const handlePurgeThread = () => {
     if (deleteTaskInput === folderName && onDeleteFolder) {
+      if (!deleteFinalConfirm) {
+        setDeleteFinalConfirm(true);
+        return;
+      }
       onDeleteFolder();
     }
   };
@@ -177,8 +183,39 @@ const CoherencePanel: React.FC<CoherencePanelProps> = ({
     }
   };
 
+  const deleteModal = deleteFinalConfirm ? ReactDOM.createPortal(
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-6"
+      style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
+    >
+      <div className="bg-[#faf9f6] dark:bg-[#1a1a16] border border-red-300 dark:border-red-800 shadow-2xl p-8 max-w-sm w-full animate-in fade-in zoom-in-95 duration-200">
+        <p className="text-[9px] mono font-bold uppercase tracking-[0.3em] text-red-600 mb-4">Final confirmation</p>
+        <p className="text-[15px] font-bold mono text-[#2a2a24] dark:text-[#d1d1c1] uppercase mb-2">{folderName}</p>
+        <p className="text-[12px] mono text-[#908e7e] dark:text-[#7a786a] leading-relaxed mb-8">
+          This thread, all its commits, and its entire history will be permanently deleted. There is no undo.
+        </p>
+        <div className="flex gap-3">
+          <button
+            onClick={() => onDeleteFolder?.()}
+            className="flex-1 py-4 text-[10px] mono font-black bg-red-600 text-white uppercase tracking-widest hover:bg-red-700 transition-all"
+          >
+            Yes, delete it
+          </button>
+          <button
+            onClick={() => { setDeleteFinalConfirm(false); setRedZoneView('menu'); setDeleteTaskInput(''); }}
+            className="flex-1 py-4 text-[10px] mono font-bold border border-[#c0beb0]/40 dark:border-white/10 text-[#908e7e] dark:text-[#7a786a] uppercase tracking-widest hover:text-[#2a2a24] dark:hover:text-[#d1d1c1] transition-colors"
+          >
+            No, keep it
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  ) : null;
+
   return (
     <div className="flex flex-col h-full relative transition-colors duration-300">
+      {deleteModal}
       <header className="px-6 py-6 flex items-center justify-between border-b border-[#c0beb0]/20 dark:border-white/10 bg-[#f4f2eb]/60 dark:bg-[#1a1a16]/60">
         <div className="flex flex-col gap-1">
           <span className="text-[11px] font-bold mono tracking-[0.2em] text-[#908e7e] dark:text-[#7a786a] uppercase italic">Coherence Monitor</span>
@@ -263,7 +300,7 @@ const CoherencePanel: React.FC<CoherencePanelProps> = ({
                       isSelected ? 'bg-[#2a2a24] dark:bg-[#d1d1c1]' : hasDriftAtSnapshot ? 'bg-amber-400' : 'bg-[#c0beb0]/80 dark:bg-[#7a786a]'
                     }`} />
                     <div className="text-[9px] text-[#908e7e] dark:text-[#7a786a] mono tracking-widest uppercase mb-1">
-                      Snapshot_{new Date(s.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12: false})}
+                      Commit_{new Date(s.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12: false})}
                     </div>
                     <div className="text-[11px] text-[#2a2a24] dark:text-[#d1d1c1] truncate tracking-tight font-medium uppercase mono max-w-[85%]">
                       {s.changeSummary}
@@ -306,7 +343,7 @@ const CoherencePanel: React.FC<CoherencePanelProps> = ({
                   <span className="opacity-30">&rarr;</span>
                 </button>
                 <button onClick={() => setRedZoneView('commits')} className="w-full text-left p-3 text-[10px] mono font-bold uppercase tracking-widest text-[#2a2a24] dark:text-[#d1d1c1] bg-white dark:bg-white/5 border border-[#c0beb0]/30 dark:border-white/10 hover:border-red-300 dark:hover:border-red-700 transition-colors flex justify-between">
-                  <span>Purge Snapshots</span>
+                  <span>Delete Commits</span>
                   <span className="opacity-30">&rarr;</span>
                 </button>
                 <button onClick={() => setRedZoneView('thread')} className="w-full text-left p-3 text-[10px] mono font-bold uppercase tracking-widest text-red-600 bg-red-50/50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex justify-between">
@@ -350,7 +387,7 @@ const CoherencePanel: React.FC<CoherencePanelProps> = ({
            {redZoneView === 'commits' && (
              <div className="space-y-4 animate-in fade-in duration-200">
                <div className="flex items-center justify-between">
-                 <h4 className="text-[9px] mono font-bold uppercase text-red-600 tracking-[0.15em]">Snapshot Ledger</h4>
+                 <h4 className="text-[9px] mono font-bold uppercase text-red-600 tracking-[0.15em]">Commit Ledger</h4>
                  <button onClick={() => {setRedZoneView('menu'); setConfirmingItem(null);}} className="text-[9px] mono text-[#908e7e] dark:text-[#7a786a] uppercase hover:text-[#2a2a24] dark:hover:text-[#d1d1c1] transition-colors font-bold">Back</button>
                </div>
                <div className="space-y-1.5 max-h-64 overflow-y-auto hide-scrollbar pr-2">
@@ -406,15 +443,15 @@ const CoherencePanel: React.FC<CoherencePanelProps> = ({
                  placeholder="Identifier verification..."
                />
                <div className="flex gap-2">
-                 <button 
+                 <button
                    disabled={deleteTaskInput !== folderName}
                    onClick={handlePurgeThread}
                    className="flex-1 py-4 text-[9px] mono font-black bg-red-600 dark:bg-red-700 text-white uppercase tracking-widest disabled:opacity-20 transition-all hover:bg-red-700 dark:hover:bg-red-800 shadow-md"
                  >
-                   Execute Purge
+                   Delete Thread
                  </button>
-                 <button 
-                   onClick={() => { setRedZoneView('menu'); setDeleteTaskInput(''); }}
+                 <button
+                   onClick={() => { setRedZoneView('menu'); setDeleteTaskInput(''); setDeleteFinalConfirm(false); }}
                    className="px-6 py-4 text-[9px] mono font-bold text-[#908e7e] dark:text-[#7a786a] uppercase tracking-widest hover:text-[#2a2a24] dark:hover:text-[#d1d1c1] transition-colors"
                  >
                    Cancel
