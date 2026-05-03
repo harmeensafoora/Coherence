@@ -67,10 +67,14 @@ const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, th
   return (
     <div className="min-h-screen px-4 sm:px-8 md:px-12 py-10 md:py-20 flex flex-col items-center relative z-10 transition-colors duration-300">
       <div className="w-full max-w-5xl">
+        {/* Wordmark — centered like a product identity */}
+        <div className="text-center mb-10 md:mb-14">
+          <h1 className="text-[42px] md:text-[64px] font-bold tracking-[0.12em] text-[#2a2a24] dark:text-[#d1d1c1] uppercase leading-none glow-text mono">Coherence</h1>
+        </div>
+
         <header className="mb-12 md:mb-24 pb-8 md:pb-12 border-b border-[#c0beb0]/30 dark:border-white/10 flex flex-col lg:flex-row items-start lg:items-end justify-between gap-8 md:gap-12">
           <div className="flex flex-col">
-            <h1 className="text-[36px] md:text-[48px] font-bold tracking-[0.1em] text-[#2a2a24] dark:text-[#d1d1c1] uppercase leading-none glow-text mono">Coherence</h1>
-            <div className="mt-4 border-l-2 border-[#E8A23A]/40 pl-4">
+            <div className="border-l-2 border-[#E8A23A]/40 pl-4">
               <p className="text-[34px] md:text-[44px] font-bold tracking-[0.02em] text-[#2a2a24] dark:text-[#d1d1c1] mono leading-none">
                 Hey, <span style={{ color: '#E8A23A' }}>{userName || 'there'}</span>.
               </p>
@@ -82,7 +86,7 @@ const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, th
 
           <div className="flex flex-col md:flex-row items-stretch gap-3 w-full lg:w-auto">
             <div className="flex gap-3">
-              <button 
+              <button
                 onClick={onToggleTheme}
                 className="md:w-28 p-4 bg-white/30 dark:bg-white/5 border border-[#c0beb0]/20 dark:border-white/10 flex flex-col justify-between group hover:border-[#2a2a24] dark:hover:border-[#d1d1c1] transition-all"
               >
