@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
 
 type UseCaseStatus = 'STABLE' | 'DRIFTED';
@@ -211,10 +211,6 @@ const marqueeStyles = `
     animation: signin-marquee 78s linear infinite;
   }
 
-  .signin-marquee-row.mobile-only {
-    display: none;
-  }
-
   .signin-marquee-row.reverse {
     animation-name: signin-marquee-reverse;
     margin-left: -360px;
@@ -291,58 +287,6 @@ const marqueeStyles = `
   }
 
   @media (max-width: 720px) {
-    .signin-marquee-page {
-      min-height: 100svh;
-    }
-
-    .signin-marquee-page::before {
-      background: radial-gradient(circle at center, rgba(250,249,246,0.84) 0%, rgba(250,249,246,0.54) 36%, rgba(240,237,232,0.04) 76%);
-    }
-
-    .signin-marquee-field {
-      inset: -228px -270px -177px;
-      justify-content: space-between;
-      gap: 0;
-      padding: 0;
-      transform: scale(0.62);
-      transform-origin: center center;
-    }
-
-    .signin-marquee-row {
-      display: flex;
-      gap: 54px;
-      animation-duration: 64s;
-    }
-
-    .signin-marquee-row.mobile-only {
-      display: flex;
-    }
-
-    .signin-marquee-row.reverse {
-      margin-left: -360px;
-    }
-
-    .signin-marquee-row:nth-child(1) {
-      margin-left: -60px;
-    }
-
-    .signin-marquee-row:nth-child(2) {
-      margin-left: -430px;
-    }
-
-    .signin-marquee-row:nth-child(3) {
-      margin-left: -220px;
-    }
-
-    .signin-marquee-row:nth-child(4) {
-      margin-left: -560px;
-    }
-
-    .signin-flip-card {
-      width: 270px;
-      height: 306px;
-    }
-
     .signin-center {
       align-items: center;
       padding: 18px;
@@ -356,17 +300,6 @@ const marqueeStyles = `
   }
 
   @media (max-width: 420px) {
-    .signin-marquee-field {
-      inset: -269px -286px -216px;
-      padding: 0;
-      transform: scale(0.56);
-    }
-
-    .signin-flip-card {
-      width: 272px;
-      height: 312px;
-    }
-
     .signin-console {
       width: min(100%, 332px);
       padding: 22px 16px;
@@ -600,11 +533,12 @@ const MarqueeCard = ({ useCase }: { useCase: UseCase }) => {
   );
 };
 
-const MarqueeRow = ({ reverse = false, mobileOnly = false }: { reverse?: boolean; mobileOnly?: boolean }) => {
-  const cards = [...useCases, ...useCases, ...useCases];
+const MarqueeRow = ({ reverse = false }: { reverse?: boolean }) => {
+  // 2× is sufficient for a seamless infinite loop; 3× was tripling the GPU layer count
+  const cards = [...useCases, ...useCases];
 
   return (
-    <div className={`signin-marquee-row${reverse ? ' reverse' : ''}${mobileOnly ? ' mobile-only' : ''}`}>
+    <div className={`signin-marquee-row${reverse ? ' reverse' : ''}`}>
       {cards.map((useCase, index) => (
         <MarqueeCard key={`${useCase.id}-${index}`} useCase={useCase} />
       ))}
@@ -615,6 +549,16 @@ const MarqueeRow = ({ reverse = false, mobileOnly = false }: { reverse?: boolean
 const LoginScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth < 768
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   const handleGoogleSignIn = async () => {
     setLoading(true); setError(null);
@@ -629,12 +573,12 @@ const LoginScreen: React.FC = () => {
     <div className="signin-marquee-page">
       <style>{marqueeStyles}</style>
 
-      <div className="signin-marquee-field">
-        <MarqueeRow />
-        <MarqueeRow reverse />
-        <MarqueeRow mobileOnly />
-        <MarqueeRow reverse mobileOnly />
-      </div>
+      {!isMobile && (
+        <div className="signin-marquee-field">
+          <MarqueeRow />
+          <MarqueeRow reverse />
+        </div>
+      )}
 
       <main className="signin-center">
         <div className="signin-console">
@@ -746,6 +690,17 @@ const LoginScreen: React.FC = () => {
               </>
             )}
           </button>
+
+          <p style={{
+            fontSize: 9,
+            fontFamily: 'monospace',
+            color: '#b0ae9e',
+            marginTop: 20,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+          }}>
+            Coherence for Teams — coming soon
+          </p>
         </div>
       </main>
     </div>
