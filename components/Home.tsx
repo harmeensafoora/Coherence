@@ -70,11 +70,11 @@ const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, th
         <header className="mb-12 md:mb-24 pb-8 md:pb-12 border-b border-[#c0beb0]/30 dark:border-white/10 flex flex-col lg:flex-row items-start lg:items-end justify-between gap-8 md:gap-12">
           <div className="flex flex-col">
             <h1 className="text-[36px] md:text-[48px] font-bold tracking-[0.1em] text-[#2a2a24] dark:text-[#d1d1c1] uppercase leading-none glow-text mono">Coherence</h1>
-            <div className="mt-3 border-l-2 border-[#2a2a24]/10 dark:border-white/10 pl-4">
-              <p className="text-[17px] font-bold tracking-[0.06em] text-[#2a2a24] dark:text-[#d1d1c1] mono">
+            <div className="mt-4 border-l-2 border-[#E8A23A]/40 pl-4">
+              <p className="text-[26px] md:text-[32px] font-bold tracking-[0.02em] text-[#2a2a24] dark:text-[#d1d1c1] mono leading-none">
                 Hey, <span style={{ color: '#E8A23A' }}>{userName || 'there'}</span>.
               </p>
-              <p className="text-[12px] font-medium tracking-[0.04em] text-[#908e7e] dark:text-[#7a786a] mono mt-0.5 italic">
+              <p className="text-[13px] font-medium tracking-[0.04em] text-[#908e7e] dark:text-[#7a786a] mono mt-2 italic">
                 {greetingLine}
               </p>
             </div>
