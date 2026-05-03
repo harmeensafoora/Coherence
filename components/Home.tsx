@@ -1,5 +1,17 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+
+const GREETING_LINES = [
+  "What are you holding onto today?",
+  "Anything shifting since last time?",
+  "What's worth committing to today?",
+  "Drifts happen. What's clear right now?",
+  "What changed while you were gone?",
+  "Still thinking about it?",
+  "What are you tracking today?",
+  "Something worth writing down?",
+  "What are you avoiding right now?",
+];
 import { Folder } from '../types';
 
 interface HomeProps {
@@ -10,10 +22,11 @@ interface HomeProps {
   onToggleTheme: () => void;
   onSignOut: () => void;
   userEmail?: string;
+  userName?: string;
   onboardingStep?: string;
 }
 
-const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, theme, onToggleTheme, onSignOut, userEmail, onboardingStep }) => {
+const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, theme, onToggleTheme, onSignOut, userEmail, userName, onboardingStep }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newName, setNewName] = useState('');
   const [newIntent, setNewIntent] = useState('');
@@ -37,6 +50,10 @@ const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, th
 
   const driftCount = folders.filter(f => f.state.driftDetected.length > 0).length;
   const isFormValid = newName.trim().length > 0 && newIntent.trim().length > 0;
+  const greetingLine = useMemo(
+    () => GREETING_LINES[Math.floor(Math.random() * GREETING_LINES.length)],
+    []
+  );
 
   React.useEffect(() => {
     if (
@@ -53,9 +70,14 @@ const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, th
         <header className="mb-12 md:mb-24 pb-8 md:pb-12 border-b border-[#c0beb0]/30 dark:border-white/10 flex flex-col lg:flex-row items-start lg:items-end justify-between gap-8 md:gap-12">
           <div className="flex flex-col">
             <h1 className="text-[36px] md:text-[48px] font-bold tracking-[0.1em] text-[#2a2a24] dark:text-[#d1d1c1] uppercase leading-none glow-text mono">Coherence</h1>
-            <p className="text-[13px] font-medium tracking-[0.35em] text-[#908e7e] dark:text-[#7a786a] uppercase mono mt-3 border-l-2 border-[#2a2a24]/10 dark:border-white/10 pl-4">
-              Version control for your thinking
-            </p>
+            <div className="mt-3 border-l-2 border-[#2a2a24]/10 dark:border-white/10 pl-4">
+              <p className="text-[13px] font-bold tracking-[0.06em] text-[#2a2a24] dark:text-[#d1d1c1] mono">
+                Hey, {userName || 'there'}.
+              </p>
+              <p className="text-[12px] font-medium tracking-[0.04em] text-[#908e7e] dark:text-[#7a786a] mono mt-0.5">
+                {greetingLine}
+              </p>
+            </div>
           </div>
 
           <div className="flex flex-col md:flex-row items-stretch gap-3 w-full lg:w-auto">
@@ -236,11 +258,6 @@ const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, th
           })}
         </div>
 
-        <footer className="mt-40 text-center pb-12 opacity-20 dark:opacity-40">
-          <p className="text-[9px] mono text-[#b0ae9e] dark:text-[#7a786a] tracking-[0.4em] font-bold uppercase">
-            Observer Protocol 3.0 // State Persistent
-          </p>
-        </footer>
       </div>
     </div>
   );

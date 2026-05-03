@@ -306,6 +306,7 @@ const App: React.FC = () => {
         onToggleTheme={toggleTheme}
         onSignOut={handleSignOut}
         userEmail={user.email}
+        userName={user.user_metadata?.given_name || user.user_metadata?.full_name?.split(' ')[0] || user.email?.split('@')[0]}
         onboardingStep={tourActive ? TOUR_STEPS[tourStep]?.id : undefined}
       />
       {tourActive && (
