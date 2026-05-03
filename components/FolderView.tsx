@@ -274,7 +274,7 @@ const FolderView: React.FC<FolderViewProps> = ({ folder, onBack, onUpdate, onDel
             onClick={() => { setSelectedFileId(null); setShowMobileNav(false); }}
             className={`w-full text-center p-3 transition-all mono text-[10px] font-bold tracking-widest uppercase border border-[#c0beb0]/40 dark:border-white/10 ${isCreatingNew ? 'bg-[#2a2a24] dark:bg-[#d1d1c1] text-white dark:text-[#121210] shadow-sm' : 'bg-white/50 dark:bg-white/5 text-[#2a2a24] dark:text-[#d1d1c1] hover:bg-white dark:hover:bg-white/10 transition-colors'}`}
           >
-            + New Update
+            + New Commit
           </button>
         </header>
 
@@ -338,9 +338,9 @@ const FolderView: React.FC<FolderViewProps> = ({ folder, onBack, onUpdate, onDel
             </button>
             <button
               onClick={onBack}
-              className="text-[12px] mono text-[#908e7e] dark:text-[#7a786a] hover:text-[#2a2a24] dark:hover:text-[#d1d1c1] transition-colors shrink-0"
+              className="text-[11px] mono font-bold uppercase tracking-widest text-[#908e7e] dark:text-[#7a786a] hover:text-[#2a2a24] dark:hover:text-[#d1d1c1] border border-[#c0beb0]/30 dark:border-white/10 hover:border-[#2a2a24]/40 dark:hover:border-white/30 px-3 py-1.5 transition-all shrink-0"
             >
-              &larr; <span className="hidden sm:inline">Exit</span>
+              &larr; <span className="hidden sm:inline">All Threads</span><span className="sm:hidden">Back</span>
             </button>
             <div className="flex flex-col min-w-0">
               <div className="flex items-baseline gap-2 min-w-0">

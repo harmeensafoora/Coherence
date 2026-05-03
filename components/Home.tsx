@@ -71,10 +71,10 @@ const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, th
           <div className="flex flex-col">
             <h1 className="text-[36px] md:text-[48px] font-bold tracking-[0.1em] text-[#2a2a24] dark:text-[#d1d1c1] uppercase leading-none glow-text mono">Coherence</h1>
             <div className="mt-3 border-l-2 border-[#2a2a24]/10 dark:border-white/10 pl-4">
-              <p className="text-[13px] font-bold tracking-[0.06em] text-[#2a2a24] dark:text-[#d1d1c1] mono">
-                Hey, {userName || 'there'}.
+              <p className="text-[17px] font-bold tracking-[0.06em] text-[#2a2a24] dark:text-[#d1d1c1] mono">
+                Hey, <span style={{ color: '#E8A23A' }}>{userName || 'there'}</span>.
               </p>
-              <p className="text-[12px] font-medium tracking-[0.04em] text-[#908e7e] dark:text-[#7a786a] mono mt-0.5">
+              <p className="text-[12px] font-medium tracking-[0.04em] text-[#908e7e] dark:text-[#7a786a] mono mt-0.5 italic">
                 {greetingLine}
               </p>
             </div>
@@ -229,6 +229,11 @@ const Home: React.FC<HomeProps> = ({ folders, onSelectFolder, onCreateFolder, th
                         <h3 className="text-[15px] font-bold text-[#2a2a24] dark:text-[#d1d1c1] uppercase mono tracking-tight leading-tight group-hover:underline underline-offset-4">
                           {folder.name}
                         </h3>
+                        {folder.state.intent.length > 0 && (
+                          <p className="text-[10px] mono text-[#908e7e] dark:text-[#7a786a] mt-2 leading-snug line-clamp-2 max-w-[180px] italic">
+                            {folder.state.intent[0]}
+                          </p>
+                        )}
                      </div>
                   </div>
                   <div className={`w-1.5 h-1.5 rounded-full border border-white dark:border-black mt-1.5 ${isUninitialized ? 'bg-slate-200 dark:bg-slate-800' : hasDrift ? 'bg-[#fbbf24]' : 'bg-[#4ade80]'}`}></div>
